@@ -1,0 +1,32 @@
+[Unit]
+Description=Plum Guide (Next.js)
+Documentation=https://github.com/kitokaesu/plum-guide-curation
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=plum
+Group=plum
+WorkingDirectory=/opt/plum-guide-curation
+Environment=NODE_ENV=development
+Environment=PORT=3000
+EnvironmentFile=-/opt/plum-guide-curation/.env
+ExecStart=/usr/bin/npm run dev
+Restart=always
+RestartSec=5
+TimeoutStopSec=20
+KillSignal=SIGINT
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=plum-guide
+
+# Endurecimento básico
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ProtectHome=true
+ReadWritePaths=/opt/plum-guide-curation
+
+[Install]
+WantedBy=multi-user.target
