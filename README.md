@@ -58,6 +58,8 @@ A aplicação é uma demonstração funcional: pagamentos e emails são simulado
 
 A versão publicada corre em Cloudflare Workers com uma base de dados D1 gerida. O esquema e os dados de demonstração são criados automaticamente no primeiro pedido, pelo que a aplicação fica utilizável sem qualquer passo manual de base de dados.
 
+A instalação no servidor da unidade curricular está descrita em [`docs/guia-vm.md`](docs/guia-vm.md); para quem nunca usou uma máquina virtual, [`docs/guia-vm-detalhado.md`](docs/guia-vm-detalhado.md) explica cada comando, o que deve aparecer no ecrã e o que fazer quando aparece outra coisa.
+
 **Contas de demonstração**
 
 | Perfil | Email | Palavra-passe |

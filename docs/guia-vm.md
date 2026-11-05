@@ -6,6 +6,8 @@ Este guia põe a aplicação a correr numa máquina virtual Linux (Ubuntu/Debian
 Navegador  →  nginx (porta 80/443)  →  next dev (127.0.0.1:3000)  →  D1 local (.wrangler/state)
 ```
 
+> Se nunca trabalhaste numa VM, começa pelo [`guia-vm-detalhado.md`](guia-vm-detalhado.md): tem os mesmos passos, mas com o resultado esperado de cada comando e a explicação do que fazer quando o resultado é outro.
+
 ---
 
 ## 0. Antes de começar
