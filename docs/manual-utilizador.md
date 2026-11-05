@@ -5,11 +5,9 @@
 | | |
 | --- | --- |
 | **Aplicação** | Plum Guide |
-| **Versão do manual** | 1.0 — novembro de 2026 |
 | **Destinatários** | Hóspedes, anfitriões, especialistas Plum e administradores |
 | **Aplicação online** | <https://site-ef110a907aa543e89a6159ea2358c1de.freebuff.page> |
 | **Repositório** | <https://github.com/kitokaesu/plum-guide-curation> |
-| **Nível** | Não requer conhecimentos técnicos (exceto a opção de execução local, na secção 1.4) |
 
 ---
 
