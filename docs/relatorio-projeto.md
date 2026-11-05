@@ -6,7 +6,6 @@
 | --- | --- |
 | **Aplicação** | Plum Guide — Curation, Inspections & Bookings (`plum-guide-curation`) |
 | **Empresa de referência** | The Plum Guide (Londres, Reino Unido) — recriação académica do modelo operacional |
-| **Autor** | [@kitokaesu](https://github.com/kitokaesu) |
 | **Repositório** | <https://github.com/kitokaesu/plum-guide-curation> |
 | **Aplicação publicada** | <https://site-ef110a907aa543e89a6159ea2358c1de.freebuff.page> |
 | **Versão** | 1.0 — novembro de 2026 |
