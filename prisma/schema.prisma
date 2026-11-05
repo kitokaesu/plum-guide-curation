@@ -1,0 +1,151 @@
+// Plum Guide curation platform schema.
+// SQLite has no native ENUM type in Prisma, so enum columns are stored as
+// validated strings. The allowed values live in src/lib/constants.ts.
+
+generator client {
+  provider   = "prisma-client-js"
+  // Rust-free client: uses the WASM query compiler, which is required in
+  // Cloudflare Workers (no native query engine binary can be loaded there).
+  engineType = "client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  fullName     String   @map("full_name")
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         String   @default("GUEST")
+  createdAt    DateTime @default(now()) @map("created_at")
+
+  properties      Property[]       @relation("PropertyHost")
+  bookings        Booking[]        @relation("GuestBookings")
+  inspectionSlots InspectionSlot[] @relation("SpecialistSlots")
+  cancellations   Cancellation[]   @relation("CancelledBy")
+
+  @@index([role])
+  @@map("users")
+}
+
+model Property {
+  id          String   @id @default(cuid())
+  hostId      String   @map("host_id")
+  title       String
+  location    String
+  nightlyRate Decimal  @map("nightly_rate")
+  status      String   @default("DRAFT")
+  plumScore   Float?   @map("plum_score")
+  imageUrl    String   @map("image_url")
+  tagline     String   @default("")
+  description String   @default("")
+  bedrooms    Int      @default(1)
+  bathrooms   Int      @default(1)
+  maxGuests   Int      @default(2) @map("max_guests")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  host            User                 @relation("PropertyHost", fields: [hostId], references: [id], onDelete: Cascade)
+  inspectionSlots InspectionSlot[]
+  availability    AvailabilityCalendar[]
+  bookings        Booking[]
+  bookedNights    BookingNight[]
+
+  @@index([status])
+  @@index([hostId])
+  @@map("properties")
+}
+
+model InspectionSlot {
+  id           String    @id @default(cuid())
+  specialistId String    @map("specialist_id")
+  propertyId   String?   @map("property_id")
+  slotDatetime DateTime  @map("slot_datetime")
+  status       String    @default("AVAILABLE")
+  reportNotes  String?   @map("report_notes")
+  score        Float?
+  completedAt  DateTime? @map("completed_at")
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  specialist User      @relation("SpecialistSlots", fields: [specialistId], references: [id], onDelete: Cascade)
+  property   Property? @relation(fields: [propertyId], references: [id], onDelete: SetNull)
+
+  @@index([slotDatetime])
+  @@index([status])
+  @@map("inspection_slots")
+}
+
+model AvailabilityCalendar {
+  id          String   @id @default(cuid())
+  propertyId  String   @map("property_id")
+  date        DateTime
+  isAvailable Boolean  @default(true) @map("is_available")
+  customPrice Decimal? @map("custom_price")
+
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, date])
+  @@index([propertyId, date])
+  @@map("availability_calendars")
+}
+
+model Booking {
+  id              String   @id @default(cuid())
+  reference       String   @unique
+  propertyId      String   @map("property_id")
+  guestId         String   @map("guest_id")
+  checkIn         DateTime @map("check_in")
+  checkOut        DateTime @map("check_out")
+  nights          Int
+  nightlySubtotal Decimal  @map("nightly_subtotal")
+  cleaningFee     Decimal  @map("cleaning_fee")
+  serviceFee      Decimal  @map("service_fee")
+  totalPrice      Decimal  @map("total_price")
+  status          String   @default("CONFIRMED")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  property     Property       @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+  guest        User           @relation("GuestBookings", fields: [guestId], references: [id], onDelete: Cascade)
+  cancellation Cancellation?
+  bookingNights BookingNight[]
+
+  @@index([propertyId, checkIn, checkOut])
+  @@index([guestId])
+  @@index([status])
+  @@map("bookings")
+}
+
+// One row per reserved night. The unique (property_id, date) index is the
+// database-level guarantee that two guests can never hold the same night,
+// even when two requests race for it.
+model BookingNight {
+  id         String   @id @default(cuid())
+  bookingId  String   @map("booking_id")
+  propertyId String   @map("property_id")
+  date       DateTime
+
+  booking  Booking  @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  property Property @relation(fields: [propertyId], references: [id], onDelete: Cascade)
+
+  @@unique([propertyId, date])
+  @@index([bookingId])
+  @@map("booking_nights")
+}
+
+model Cancellation {
+  id            String   @id @default(cuid())
+  bookingId     String   @unique @map("booking_id")
+  cancelledBy   String   @map("cancelled_by")
+  reason        String
+  refundAmount  Decimal  @map("refund_amount")
+  refundPercent Int      @map("refund_percent")
+  adminOverride Boolean  @default(false) @map("admin_override")
+  createdAt     DateTime @default(now()) @map("created_at")
+
+  booking       Booking @relation(fields: [bookingId], references: [id], onDelete: Cascade)
+  cancelledByUser User  @relation("CancelledBy", fields: [cancelledBy], references: [id], onDelete: Cascade)
+
+  @@map("cancellations")
+}

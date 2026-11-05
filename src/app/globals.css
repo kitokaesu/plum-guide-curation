@@ -1,0 +1,167 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-cream font-sans text-ink antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-display font-normal tracking-tight;
+  }
+
+  :focus-visible {
+    outline: 2px solid #a98554;
+    outline-offset: 3px;
+  }
+
+  ::selection {
+    background: #eadcc0;
+    color: #16130e;
+  }
+}
+
+@layer components {
+  .container-page {
+    @apply mx-auto w-full max-w-7xl px-5 sm:px-8;
+  }
+
+  .eyebrow {
+    @apply text-[11px] font-semibold uppercase tracking-[0.26em] text-gold;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-medium transition-colors duration-200 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  .btn-sm {
+    @apply px-4 py-2 text-xs;
+  }
+
+  .btn-primary {
+    @apply bg-ink text-cream hover:bg-[#2c261d];
+  }
+
+  .btn-gold {
+    @apply bg-gold text-white hover:bg-[#977444];
+  }
+
+  .btn-outline {
+    @apply border border-ink/25 bg-transparent text-ink hover:border-ink hover:bg-ink/[0.04];
+  }
+
+  .btn-ghost {
+    @apply px-3 py-2 text-ink underline decoration-hairline underline-offset-4 hover:decoration-gold;
+  }
+
+  .btn-danger {
+    @apply bg-wine text-white hover:bg-[#752626];
+  }
+
+  .btn-cream {
+    @apply bg-cream text-ink hover:bg-white;
+  }
+
+  .card {
+    @apply rounded-2xl border border-hairline bg-paper;
+  }
+
+  .field {
+    @apply block w-full rounded-xl border border-hairline bg-white px-4 py-3 text-sm text-ink transition placeholder:text-muted/60 focus:border-gold focus:outline-none focus:ring-2 focus:ring-gold/25;
+  }
+
+  .label {
+    @apply mb-2 block text-[11px] font-semibold uppercase tracking-[0.18em] text-muted;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em];
+  }
+
+  .badge-green {
+    @apply bg-[#e6efe7] text-[#2c5a42];
+  }
+
+  .badge-amber {
+    @apply bg-[#f5e9cf] text-[#7c5413];
+  }
+
+  .badge-red {
+    @apply bg-[#f4e3e0] text-[#832f2f];
+  }
+
+  .badge-neutral {
+    @apply bg-[#efebe2] text-[#5e574c];
+  }
+
+  .badge-gold {
+    @apply bg-goldSoft text-[#7a5a2e];
+  }
+
+  .badge-ink {
+    @apply bg-ink text-cream;
+  }
+
+  .section {
+    @apply py-16 sm:py-24;
+  }
+
+  .table-base {
+    @apply w-full border-collapse text-left text-sm;
+  }
+
+  .table-base th {
+    @apply border-b border-hairline pb-3 pr-4 text-[10px] font-semibold uppercase tracking-[0.16em] text-muted;
+  }
+
+  .table-base td {
+    @apply border-b border-hairline/70 py-4 pr-4 align-top;
+  }
+
+  .prose-plum p {
+    @apply mb-4 leading-relaxed text-muted;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@media print {
+  header,
+  footer,
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: #ffffff;
+  }
+
+  main {
+    padding: 0 !important;
+  }
+
+  .invoice-sheet {
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  @page {
+    margin: 16mm;
+  }
+}

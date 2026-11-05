@@ -1,0 +1,23 @@
+node_modules
+.next
+out
+.env
+.env.local
+.auth-secret
+.env*.local
+prisma/dev.db
+prisma/dev.db-journal
+*.tsbuildinfo
+next-env.d.ts
+.DS_Store
+npm-debug.log*
+.dev-server.log
+curl-*.txt
+
+/freebuff-sites-build/
+/.open-next/
+/.wrangler/
+.workerd.log
+
+# Freebuff desktop internals (attachment cache, logs)
+.cloud-attachments/

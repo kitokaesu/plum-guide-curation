@@ -1,0 +1,39 @@
+{
+  "name": "plum-guide-curation",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Plum Guide — luxury home curation, Plum Test inspections, real-time booking, availability and cancellation workflows.",
+  "scripts": {
+    "dev": "next dev -H 0.0.0.0 -p 3000",
+    "build": "prisma generate && next build",
+    "start": "next start -H 0.0.0.0 -p 3000",
+    "typecheck": "tsc --noEmit",
+    "db:push": "prisma db push",
+    "db:migrate": "prisma migrate deploy",
+    "db:seed": "node prisma/seed.mjs",
+    "db:export:d1": "node scripts/export-d1-seed.mjs",
+    "db:reset": "prisma db push --force-reset && node prisma/seed.mjs",
+    "postinstall": "prisma generate"
+  },
+  "dependencies": {
+    "@prisma/adapter-d1": "^6.19.3",
+    "@prisma/client": "^6.14.0",
+    "bcryptjs": "^3.0.2",
+    "jose": "^5.9.6",
+    "next": "^16.4.3",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@opennextjs/cloudflare": "1.20.12",
+    "@types/node": "^22.10.2",
+    "@types/react": "^19.0.3",
+    "@types/react-dom": "^19.0.2",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "prisma": "^6.14.0",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.7.2",
+    "wrangler": "4.148.0"
+  }
+}

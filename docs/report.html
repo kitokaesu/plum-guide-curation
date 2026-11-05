@@ -1,0 +1,869 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Plum Guide — Project Report</title>
+<style>
+  :root {
+    --ink:#16130e; --cream:#faf7f0; --paper:#fffdf8; --gold:#a98554; --gold-soft:#e9ddc6;
+    --hairline:#e4dccb; --muted:#6f675b; --moss:#3f6b4f; --wine:#8a2f35; --amber:#9a6b25;
+  }
+  * { box-sizing:border-box; }
+  html { scroll-behavior:smooth; }
+  body { margin:0; background:#efe9dd; color:var(--ink); font-family:"Segoe UI",system-ui,-apple-system,sans-serif; font-size:15px; line-height:1.68; }
+  .sheet { max-width:900px; margin:0 auto; background:var(--cream); padding:0 64px 70px; box-shadow:0 20px 60px rgba(22,19,14,.1); }
+  .cover { margin:0 -64px 0; padding:70px 64px 54px; background:var(--ink); color:var(--cream); }
+  .cover .eyebrow { color:var(--gold-soft); }
+  h1,h2,h3,h4 { font-family:Georgia,"Times New Roman",serif; font-weight:400; letter-spacing:-.01em; margin:0; }
+  h1 { font-size:clamp(38px,5.2vw,58px); line-height:1.03; margin-top:16px; }
+  h2 { font-size:30px; line-height:1.15; margin:0 0 4px; }
+  h3 { font-size:21px; margin:30px 0 6px; }
+  h4 { font-size:16px; margin:20px 0 4px; }
+  p { margin:10px 0; }
+  .eyebrow { font-size:10.5px; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--gold); }
+  .lede { font-size:17px; line-height:1.6; max-width:60ch; margin-top:18px; color:rgba(250,247,240,.78); }
+  .cover-meta { display:flex; flex-wrap:wrap; gap:8px 26px; margin-top:34px; font-size:10px; letter-spacing:.15em; text-transform:uppercase; color:rgba(250,247,240,.55); }
+  .cover-meta span { padding-left:14px; border-left:1px solid rgba(255,255,255,.2); }
+  .abstract { border-left:3px solid var(--gold); padding:2px 0 2px 18px; margin:34px 0 0; color:var(--muted); font-size:14px; }
+  .toc { columns:2; column-gap:36px; margin:38px 0 20px; padding:22px 0; border-top:1px solid var(--hairline); border-bottom:1px solid var(--hairline); font-size:13px; }
+  .toc a { display:block; padding:3px 0; color:var(--muted); text-decoration:none; break-inside:avoid; }
+  .toc a:hover { color:var(--ink); }
+  .toc a span { display:inline-block; width:22px; color:var(--gold); font-family:Georgia,serif; }
+  section { margin-top:46px; scroll-margin-top:20px; }
+  section > .eyebrow { margin-bottom:8px; }
+  .rule { width:44px; height:2px; background:var(--gold); margin:8px 0 18px; }
+  h2 + p { margin-top:10px; }
+  .note, .warning { border:1px solid var(--hairline); border-left:3px solid var(--gold); background:var(--paper); padding:13px 16px; margin:18px 0; font-size:13.5px; }
+  .warning { border-left-color:var(--wine); background:#fbf1ee; }
+  .note b, .warning b { text-transform:uppercase; letter-spacing:.12em; font-size:10px; display:block; margin-bottom:3px; }
+  ul, ol { margin:10px 0; padding-left:22px; }
+  li { margin:5px 0; }
+  table { width:100%; border-collapse:collapse; margin:16px 0 22px; font-size:12.5px; }
+  th { text-align:left; font-size:9.5px; letter-spacing:.12em; text-transform:uppercase; color:var(--gold); padding:7px 9px; border-bottom:1px solid var(--ink); vertical-align:bottom; }
+  td { padding:7px 9px; border-bottom:1px solid var(--hairline); vertical-align:top; }
+  tbody tr:last-child td { border-bottom:0; }
+  tr { break-inside:avoid; }
+  code, .kbd { font-family:ui-monospace,Consolas,monospace; font-size:.88em; background:rgba(169,133,84,.13); padding:1px 4px; border-radius:3px; }
+  pre { background:var(--ink); color:var(--cream); border-radius:8px; padding:15px 17px; overflow-x:auto; font-size:12px; line-height:1.55; }
+  pre code { background:none; padding:0; }
+  figure { margin:20px 0 24px; }
+  figure img { width:100%; display:block; border:1px solid var(--hairline); border-radius:8px; }
+  figcaption { font-size:11.5px; color:var(--muted); margin-top:7px; }
+  figcaption b { color:var(--ink); }
+  .diagram { border:1px solid var(--hairline); background:var(--paper); border-radius:8px; padding:10px; }
+  .diagram svg { width:100%; height:auto; display:block; }
+  .pill { display:inline-block; border-radius:999px; padding:1px 7px; font-size:9.5px; letter-spacing:.06em; text-transform:uppercase; border:1px solid var(--hairline); white-space:nowrap; }
+  .green { color:var(--moss); background:#eef4ef; border-color:rgba(63,107,79,.3); }
+  .red { color:var(--wine); background:#f8ece9; border-color:rgba(138,47,53,.3); }
+  .amber { color:var(--amber); background:#f8f0df; border-color:rgba(154,107,37,.3); }
+  .neutral { color:var(--muted); background:#f2eee5; }
+  .two { display:grid; grid-template-columns:1fr 1fr; gap:24px; }
+  .card { background:var(--paper); border:1px solid var(--hairline); border-radius:8px; padding:16px; }
+  .card h4 { margin-top:0; }
+  .card ul { margin:6px 0 0; }
+  .refs { padding-left:24px; font-size:13px; }
+  .refs li { margin:9px 0; }
+  .refs a { color:var(--ink); text-decoration-color:var(--gold); }
+  .footer { margin-top:52px; padding-top:18px; border-top:1px solid var(--hairline); font-size:11px; color:var(--muted); display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; }
+  @media (max-width:800px) {
+    .sheet { padding:0 22px 50px; }
+    .cover { margin:0 -22px; padding:44px 22px 36px; }
+    .two { grid-template-columns:1fr; }
+    .toc { columns:1; }
+    table { font-size:11.5px; }
+    .table-wrap { overflow-x:auto; }
+  }
+  @media print {
+    @page { size:A4; margin:15mm 15mm; }
+    body { background:#fff; font-size:10.3pt; line-height:1.5; }
+    .sheet { max-width:none; box-shadow:none; padding:0; background:#fff; }
+    .cover { margin:0 0 14mm; padding:0 0 8mm; background:#fff; color:var(--ink); border-bottom:2px solid var(--ink); }
+    .cover .eyebrow { color:var(--gold); }
+    .lede { color:var(--muted); }
+    .cover-meta { color:var(--muted); }
+    .cover-meta span { border-color:var(--hairline); }
+    .abstract { color:var(--muted); }
+    .toc { columns:2; font-size:9.5pt; }
+    section { margin-top:8mm; }
+    h1,h2,h3 { page-break-after:avoid; }
+    section.major { break-before:page; }
+    table, figure, .card, .note, .warning { break-inside:avoid; }
+    .diagram { break-inside:avoid; }
+    a { color:var(--ink); text-decoration:none; }
+    .no-print { display:none; }
+  }
+</style>
+</head>
+<body>
+<div class="sheet">
+
+  <header class="cover">
+    <p class="eyebrow">Project report · Version 1.0 · October 2026</p>
+    <h1>Plum Guide</h1>
+    <p class="eyebrow" style="margin-top:10px;font-size:13px;letter-spacing:.14em">Curation, inspections and bookings for the top 3% of homes</p>
+    <p class="lede">A full-stack demonstration of the operational platform behind a curated holiday-home brand: specialist Plum Test inspections, host availability and pricing, atomic guest bookings, self-service cancellations and four role-based portals.</p>
+    <div class="cover-meta">
+      <span>Next.js 16 · React 19 · Prisma 6 · Cloudflare D1</span>
+      <span>Prices in EUR</span>
+      <span>Demonstration build</span>
+    </div>
+    <p class="abstract"><b>Abstract.</b> This report documents the research, design, implementation and testing of a curated home-rental platform modelled on Plum Guide. It explains why the company’s quality promise creates an operational problem, how the problem was translated into requirements for four user groups, how the database enforces the non-negotiable rules, and what was learned from exercising the finished system. It also records the free AI tools used during the build and separates what the system does well from what it deliberately does not do.</p>
+  </header>
+
+  <nav class="toc" aria-label="Contents">
+    <a href="#intro"><span>01</span>Introduction and scope</a>
+    <a href="#company"><span>02</span>Company, sector and research</a>
+    <a href="#problem"><span>03</span>Problem, users and functionalities</a>
+    <a href="#technology"><span>04</span>Technologies and runtime</a>
+    <a href="#database"><span>05</span>Database structure and relationships</a>
+    <a href="#interface"><span>06</span>Interface decisions and improvements</a>
+    <a href="#ai"><span>07</span>Use of free AI tools</a>
+    <a href="#testing"><span>08</span>Testing, results, difficulties and solutions</a>
+    <a href="#functionality"><span>09</span>Functionality, limitations and improvements</a>
+    <a href="#conclusion"><span>10</span>Conclusion</a>
+    <a href="#references"><span>11</span>References</a>
+    <a href="#appendix"><span>12</span>Appendix: accounts, routes and commands</a>
+  </nav>
+
+  <!-- 1 -->
+  <section id="intro">
+    <p class="eyebrow">01</p>
+    <h2>Introduction and scope</h2>
+    <div class="rule"></div>
+    <p>Plum Guide is a real company that curates holiday homes and claims to admit only “the top 3%” in each destination. The brand promise is simple to state and difficult to operate: every home must be visited, scored, approved and kept available; every booking must be confirmed without ever selling the same night twice; every cancellation must apply a published policy and release the dates immediately.</p>
+    <p>This project builds that operating model as a working web application. It is not a visual mock-up. A guest can search a real collection, select nights on a live calendar, create a reservation with an authoritative server-calculated total, print an invoice and cancel it. A host can submit a home, book a specialist inspection, close nights and set custom prices. A specialist can publish inspection slots and record a score that automatically approves or rejects a home. An administrator can see the whole pipeline, override an inspection decision and adjust a refund within the amount paid.</p>
+    <p>The report describes the work in the order it was carried out: research, requirements, technology selection, data modelling, interface design and iteration, AI-assisted implementation, testing and reflection. The companion artefacts are the <b>presentation</b> (<code>docs/presentation.html</code>) and the <b>user guide</b> (<code>docs/user-guide.html</code>).</p>
+    <div class="note"><b>Scope boundary</b>This is a demonstration, not a production marketplace. Payments and confirmation emails are simulated, photography is curated stock imagery, and the seeded accounts use public demo passwords. Those choices are listed again in section 9 rather than hidden.</div>
+  </section>
+
+  <!-- 2 -->
+  <section id="company" class="major">
+    <p class="eyebrow">02</p>
+    <h2>Company, sector and research</h2>
+    <div class="rule"></div>
+
+    <h3>2.1 The chosen company</h3>
+    <p><b>Plum Guide</b> is a British vacation-rental company headquartered in London. It launched in 2016 and was founded by Doron Meyassed, Imran Arshed, Arif Meherali and Alex Lee. Public profiles describe offices in New York and Hong Kong and, by 2021, homes in more than 500 destinations across 29 countries. The company positions itself as a quality benchmark rather than a listing marketplace: its own story compares the Plum Guide to a Michelin star for restaurants, and says it has put more than 500,000 homes through its vetting process since launch [1][2].</p>
+    <p>The selection process combines data with human judgement. Plum Guide says its experts filter the available rentals, and independent “home critics” visit the homes that survive the initial screen. The inspection standard is commonly described as more than 150 criteria — from shower pressure and Wi-Fi speed to smell and kitchen equipment [1][4]. Only a small fraction of homes are accepted; press coverage has used both “top 1%” and “top 3%” depending on the year and the destination, which is itself a useful lesson about marketing figures [2][3][5].</p>
+    <p>The commercial model is a curated two-sided marketplace. Guests pay to stay in inspected homes; hosts gain access to guests who value the vetting; Plum Guide coordinates the curation, inspection and booking experience in between. The demonstration in this project focuses on that middle layer, not on replicating the public brand or its inventory.</p>
+
+    <h3>2.2 The sector and why it is interesting</h3>
+    <p>Short-term rentals are abundant and uneven. The official Plum Guide story opens with “15,000,000+ vacation homes listed online” and argues that choice has outgrown confidence [1]. Reviews help, but they are written by strangers with different standards, and a five-star average can hide a broken shower or a misleading location. The sector’s central problem is therefore not supply; it is <b>trust at the point of decision</b>.</p>
+    <p>Three business models compete in this space. Airbnb and Vrbo optimise for breadth and self-service. onefinestay and similar operators optimise for managed quality and higher-touch service. Plum Guide sits between them: a curated collection with an editorial voice, a human inspection and a booking platform. Its differentiation is credible only if the operational system behind it is trustworthy. A beautiful landing page cannot compensate for a double-booked night or a refund that never arrives.</p>
+
+    <h3>2.3 Research conducted</h3>
+    <p>The research was desk-based and deliberately limited to public sources, because no access to Plum Guide’s internal systems was available or appropriate. It had four parts:</p>
+    <ol>
+      <li><b>Company and proposition.</b> The official “Our story” page supplied the mission, founder narrative, “top 3%” language and the inspection and care promises [1]. Wikipedia supplied a dated company profile, founding details, markets and funding history, with citations to contemporaneous press [2].</li>
+      <li><b>Independent context.</b> TechCrunch’s 2019 funding report framed the company as “vacation homes for the elite” [3]. Business Insider’s 2019 feature described the “1 in 100” acceptance rate and the Michelin Guide analogy [5]. PhocusWire’s startup profile described a test of more than 150 criteria [4].</li>
+      <li><b>Current public experience.</b> The live Plum Guide site was reviewed for information architecture: how homes are presented, how the host proposition is framed, and which trust signals are repeated at the point of booking [6].</li>
+      <li><b>Technical research.</b> Official documentation for Next.js, Prisma, Cloudflare D1 and Cloudflare Workers was used to choose an architecture that could actually run the transactional rules (section 4) [7][8][9][10].</li>
+    </ol>
+    <p>The research produced a clear design implication: the brand promise needs <b>explicit, auditable states</b>. “Beautiful” is a judgement; “approved after an inspection score of 85 or more” is a rule that can be implemented, tested and explained to a host. The application therefore turns the marketing promise into a status machine and a set of financial policies.</p>
+
+    <div class="note"><b>Research limitations</b>Public sources disagree on whether the company accepts the top 1% or top 3%, and figures change over time. This report treats them as brand context, not as verified operational data. No interviews with Plum Guide staff, hosts or guests were possible; the user needs in section 3 are derived from the public proposition and from standard marketplace workflows.</div>
+  </section>
+
+  <!-- 3 -->
+  <section id="problem" class="major">
+    <p class="eyebrow">03</p>
+    <h2>Problem, users and envisaged functionalities</h2>
+    <div class="rule"></div>
+
+    <h3>3.1 The problem being investigated</h3>
+    <p><b>How can a curated rental brand prove its quality promise and operate it reliably, when curation, inspection, availability, pricing, booking and refunds all affect the same home?</b></p>
+    <p>That question breaks into five concrete operational problems:</p>
+    <ul>
+      <li><b>Evidence.</b> Guests need to see why a home is in the collection, not just that it is. The inspection score and notes must be visible and tied to a real visit.</li>
+      <li><b>State.</b> A home is not simply “listed” or “unlisted”. It is a draft, awaiting inspection, approved or rejected. Each state has different permissions and different visibility.</li>
+      <li><b>Concurrency.</b> Two guests can choose the same dates at the same moment. A polite error is not enough; the database must make a double sale impossible.</li>
+      <li><b>Money and policy.</b> The total, the service fee and the refund must be calculated by the server, stored with the booking and applied consistently. A refund must also release the calendar.</li>
+      <li><b>Role separation.</b> Hosts, specialists and administrators need different views of the same facts. Every mutation must re-check who is allowed to perform it.</li>
+    </ul>
+
+    <h3>3.2 Users and their needs</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>User</th><th>Goal</th><th>Needs from the system</th><th>Failure that matters most</th></tr></thead>
+        <tbody>
+          <tr><td><b>Guest</b></td><td>Find a home they can trust and book it without uncertainty.</td><td>Search, evidence of inspection, live availability, transparent total, instant confirmation, invoice, self-service cancellation with a refund preview.</td><td>Paying for a night that is already sold, or being surprised by a fee or refund rule.</td></tr>
+          <tr><td><b>Host</b></td><td>Get a home approved and keep it bookable at the right price.</td><td>Submit a listing, book a specialist slot, manage a 365-day calendar, set per-night prices, see bookings and revenue.</td><td>Losing a booking because the calendar is stale, or being unable to reopen dates after a cancellation.</td></tr>
+          <tr><td><b>Specialist</b></td><td>Inspect homes consistently and record an honest result.</td><td>Publish and withdraw slots, see the home and host contact, record a 0–100 score with notes, see the outcome.</td><td>An inspection result that does not change the home’s status, or a slot that can be double-claimed.</td></tr>
+          <tr><td><b>Administrator</b></td><td>Keep the collection credible and resolve exceptions.</td><td>Platform metrics, inspection review queue, approve/reject override, booking monitor, refund override with a cap, member counts.</td><td>An unaudited override, or a refund larger than the amount paid.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>3.3 Envisaged functionalities</h3>
+    <p>The requirements were grouped into the flows a user can actually complete, rather than a feature list disconnected from screens:</p>
+    <div class="two">
+      <div class="card">
+        <h4>Public and guest</h4>
+        <ul>
+          <li>Editorial landing page with the Plum Test explanation and featured homes.</li>
+          <li>Approved-only collection with text search and three sort orders.</li>
+          <li>Property detail with inspection score, host, capacity, description and live calendar.</li>
+          <li>Live quote: nightly subtotal, €180 cleaning, 8% service fee, total.</li>
+          <li>Instant booking with a human-readable reference; confirmation and printable invoice.</li>
+          <li>Guest dashboard with upcoming and past trips, spend, invoice and cancellation.</li>
+          <li>Refund preview with policy tier before a cancellation is confirmed.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Host, specialist and admin</h4>
+        <ul>
+          <li>Host listing creation (draft) and editing of title and base rate.</li>
+          <li>Specialist slot booking for the Plum Test; no self-created host slots.</li>
+          <li>365-day availability manager with open/closed nights and custom prices.</li>
+          <li>Specialist slot publishing/withdrawal and an inspection audit form.</li>
+          <li>Automatic approval at a score of 85 or above; referral below it.</li>
+          <li>Admin review queue, approve/reject override and refund override.</li>
+          <li>Admin metrics: GMV, approved homes, pipeline, cancellation rate, refunds, members.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>3.4 Non-functional requirements</h3>
+    <ul>
+      <li><b>Correctness under concurrency:</b> no double booking, no double refund, no partial cancellation.</li>
+      <li><b>Security:</b> hashed passwords, signed HTTP-only sessions, server-side authorisation and ownership checks on every mutation.</li>
+      <li><b>Consistency of money:</b> a single EUR formatter and server-calculated totals; no client-supplied amounts trusted.</li>
+      <li><b>Accessibility:</b> labelled controls, keyboard-operable dialog with focus trap and Escape, visible focus, live regions for quote and error updates, skip link.</li>
+      <li><b>Responsiveness:</b> usable at phone width; tables scroll rather than break the layout.</li>
+      <li><b>Operability:</b> one-command local start, idempotent database bootstrap, deployable Worker build.</li>
+    </ul>
+    <p><b>Out of scope for this version:</b> real card payments, transactional email, photo uploads, external calendar sync, multi-language content, tax/VAT handling, native apps.</p>
+  </section>
+
+  <!-- 4 -->
+  <section id="technology" class="major">
+    <p class="eyebrow">04</p>
+    <h2>Technologies and runtime environment</h2>
+    <div class="rule"></div>
+
+    <h3>4.1 The stack</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Layer</th><th>Technology and version</th><th>Role in the system</th><th>Why it was chosen</th></tr></thead>
+        <tbody>
+          <tr><td>Framework</td><td>Next.js 16.4 (App Router)</td><td>Routing, server components, route handlers, layouts.</td><td>Server components can read the database and render portals without shipping data-fetching code to the browser; route handlers provide a clean JSON boundary for mutations.</td></tr>
+          <tr><td>UI library</td><td>React 19.2</td><td>Client-side calendars, dialogs and forms.</td><td>Interactive pieces are isolated to the components that need state; the rest stays server-rendered.</td></tr>
+          <tr><td>Language</td><td>TypeScript 5.7</td><td>Types for domain models, API payloads and component props.</td><td>Four roles and several status machines make silent shape errors expensive; TypeScript catches them at build time.</td></tr>
+          <tr><td>Styling</td><td>Tailwind CSS 3.4 + custom design tokens</td><td>Layout, typography, colours and component classes.</td><td>A small design language can be applied consistently without a heavyweight component library; custom CSS handles the editorial character.</td></tr>
+          <tr><td>ORM</td><td>Prisma 6.14 + <code>@prisma/adapter-d1</code> 6.19</td><td>Schema modelling, typed reads, migrations for the authoring database.</td><td>Readable schema and strong types. The Rust-free client with the WASM query compiler is required on Workers, where a native engine cannot load.</td></tr>
+          <tr><td>Database</td><td>Cloudflare D1 (SQLite)</td><td>All persistent business data.</td><td>Managed SQL at the edge with no server to operate; the platform binding is available to both local development and the deployed Worker.</td></tr>
+          <tr><td>Runtime</td><td>Cloudflare Workers via OpenNext 1.20 and Wrangler 4.148</td><td>Production execution and local D1 emulation.</td><td>Keeps the application and database on the same platform, with a deployment path that does not require a Node server.</td></tr>
+          <tr><td>Auth</td><td>bcryptjs 3.0 + jose 5.9</td><td>Password hashing and HS256 JWT session cookies.</td><td>bcrypt is a deliberate, slow password hash; jose produces a signed, HTTP-only, SameSite=Lax cookie with a seven-day expiry.</td></tr>
+          <tr><td>Tooling</td><td>Node.js 22.19+ (tested on 24), npm</td><td>Local development, Prisma generation, scripts.</td><td>The minimum supported by the current Next.js and Prisma toolchain; no separate database server is needed.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>4.2 Why this architecture, and what it costs</h3>
+    <p>The decisive constraint was the runtime, not the UI. D1 is a SQLite database exposed through a Worker binding. It does not support interactive transactions, and Prisma’s D1 adapter executes statements individually rather than wrapping them in a transaction. A conventional booking implementation — read availability, then insert — leaves a window in which two requests can both read “free” and both write. The application therefore uses D1’s <code>batch()</code>, which executes its statements atomically, and pushes the decisive rules into the schema: a unique night ledger, a unique cancellation per booking, and a trigger that refuses to insert a night the host has closed.</p>
+    <p>This is a deliberate trade-off. The booking code contains raw SQL instead of a portable Prisma transaction, which makes a future move to PostgreSQL a real migration rather than a configuration change. In exchange, the current deployment is correct on the platform it actually runs on. The report returns to this in section 8.</p>
+    <p>Server components handle read-heavy pages: the landing page, collection, property detail, confirmation, invoice and all four dashboards. Client components are limited to calendars, the cancellation dialog, listing forms, the availability editor, the inspection form, moderation controls and the refund override. Every mutation goes through a route handler that re-establishes the session, checks role and ownership, validates input and recomputes money. The browser is never trusted for identity, ownership or totals.</p>
+
+    <h3>4.3 Runtime environment</h3>
+    <div class="two">
+      <div class="card">
+        <h4>Local development</h4>
+        <p><code>npm run dev</code> starts Next.js on <code>0.0.0.0:3000</code>. Wrangler provides a local D1 database from <code>freebuff.wrangler.jsonc</code>. On the first database access, the Worker creates the schema, indexes, trigger and demo rows, then writes a version marker in <code>plum_meta</code>. Subsequent cold starts perform one indexed read. Local data persists in <code>.wrangler/state</code>.</p>
+      </div>
+      <div class="card">
+        <h4>Deployed runtime</h4>
+        <p>OpenNext builds a Cloudflare Worker from the Next.js app. Freebuff Sites provides the D1 binding named <code>DB</code> and injects <code>AUTH_SECRET</code> as a platform secret. The same bootstrap runs on first request. The architecture deliberately avoids Node-only APIs, native database drivers and long-running background processes.</p>
+      </div>
+    </div>
+    <div class="note"><b>Environment configuration</b>The <code>.env</code> file is used by the Prisma CLI and the seed generator, not by the runtime. The runtime reads the D1 binding. <code>AUTH_SECRET</code> must be a long random value in production; local development may use the built-in fallback. It is never exposed in a <code>NEXT_PUBLIC_*</code> variable.</div>
+
+    <h3>4.4 Alternatives considered</h3>
+    <ul>
+      <li><b>PostgreSQL + Prisma transactions on a Node host.</b> Simpler transaction semantics and a more portable schema, but requires a managed database and a long-running Node server; it would not demonstrate the edge deployment that the rest of the stack targets.</li>
+      <li><b>Supabase/Firebase-style backend.</b> Fast for CRUD, but the booking rules would still need a transactional function or database constraint. The project’s educational point is precisely the constraint design, so a SQL database with explicit keys was preferable.</li>
+      <li><b>A client-only prototype with local storage.</b> Would make the interface easy but would not test concurrency, authorisation or money handling — the three areas where this domain is actually difficult.</li>
+    </ul>
+  </section>
+
+  <!-- 5 -->
+  <section id="database" class="major">
+    <p class="eyebrow">05</p>
+    <h2>Database structure and relationships</h2>
+    <div class="rule"></div>
+    <p>The relational model has seven business tables plus a small bootstrap marker. It separates <b>intent</b> (the host calendar), <b>commitments</b> (bookings and their night ledger), <b>evidence</b> (inspection slots) and <b>exceptions</b> (cancellations). This separation is what makes the rules auditable.</p>
+
+    <figure class="diagram">
+      <svg viewBox="0 0 1000 540" role="img" aria-label="Entity relationship diagram for the Plum Guide database">
+        <defs>
+          <marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 z" fill="#a98554" />
+          </marker>
+          <style>
+            .box { fill:#fffdf8; stroke:#e4dccb; stroke-width:1.2; }
+            .head { fill:#16130e; }
+            .tname { font-family: ui-monospace, Consolas, monospace; font-size:10.5px; fill:#faf7f0; font-weight:600; }
+            .fld { font-family: ui-monospace, Consolas, monospace; font-size:9px; fill:#4b453b; }
+            .key { fill:#a98554; font-weight:700; }
+            .fk { fill:#8a2f35; }
+            .rel { stroke:#a98554; stroke-width:1.2; fill:none; marker-end:url(#arrow); }
+            .reltext { font-family: "Segoe UI", system-ui, sans-serif; font-size:8.5px; fill:#6f675b; }
+            .labelbg { fill:#fffdf8; }
+          </style>
+        </defs>
+
+        <!-- users -->
+        <rect class="box" x="20" y="190" width="190" height="125" rx="6" />
+        <rect class="head" x="20" y="190" width="190" height="22" rx="6" />
+        <rect class="head" x="20" y="204" width="190" height="8" />
+        <text class="tname" x="28" y="205">users</text>
+        <text class="fld" x="28" y="228"><tspan class="key">PK</tspan> id</text>
+        <text class="fld" x="28" y="242">full_name</text>
+        <text class="fld" x="28" y="256"><tspan class="key">UQ</tspan> email</text>
+        <text class="fld" x="28" y="270">password_hash</text>
+        <text class="fld" x="28" y="284">role (GUEST/HOST/…)</text>
+        <text class="fld" x="28" y="298">created_at</text>
+
+        <!-- properties -->
+        <rect class="box" x="285" y="190" width="210" height="130" rx="6" />
+        <rect class="head" x="285" y="190" width="210" height="22" rx="6" />
+        <rect class="head" x="285" y="204" width="210" height="8" />
+        <text class="tname" x="293" y="205">properties</text>
+        <text class="fld" x="293" y="228"><tspan class="key">PK</tspan> id</text>
+        <text class="fld" x="293" y="242"><tspan class="fk">FK</tspan> host_id → users.id</text>
+        <text class="fld" x="293" y="256">title · location</text>
+        <text class="fld" x="293" y="270"><tspan class="key">€</tspan> nightly_rate</text>
+        <text class="fld" x="293" y="284">status · plum_score</text>
+        <text class="fld" x="293" y="298">image_url · details</text>
+        <text class="fld" x="293" y="312">created_at</text>
+
+        <!-- inspection slots -->
+        <rect class="box" x="285" y="30" width="210" height="108" rx="6" />
+        <rect class="head" x="285" y="30" width="210" height="22" rx="6" />
+        <rect class="head" x="285" y="44" width="210" height="8" />
+        <text class="tname" x="293" y="45">inspection_slots</text>
+        <text class="fld" x="293" y="68"><tspan class="key">PK</tspan> id</text>
+        <text class="fld" x="293" y="82"><tspan class="fk">FK</tspan> specialist_id → users.id</text>
+        <text class="fld" x="293" y="96"><tspan class="fk">FK</tspan> property_id → properties.id</text>
+        <text class="fld" x="293" y="110">slot_datetime · status</text>
+        <text class="fld" x="293" y="124">report_notes · score · completed_at</text>
+
+        <!-- availability -->
+        <rect class="box" x="285" y="390" width="210" height="100" rx="6" />
+        <rect class="head" x="285" y="390" width="210" height="22" rx="6" />
+        <rect class="head" x="285" y="404" width="210" height="8" />
+        <text class="tname" x="293" y="405">availability_calendars</text>
+        <text class="fld" x="293" y="428"><tspan class="key">PK</tspan> id</text>
+        <text class="fld" x="293" y="442"><tspan class="fk">FK</tspan> property_id → properties.id</text>
+        <text class="fld" x="293" y="456">date · is_available · custom_price</text>
+        <text class="fld" x="293" y="470"><tspan class="key">UQ</tspan> (property_id, date)</text>
+
+        <!-- bookings -->
+        <rect class="box" x="575" y="180" width="210" height="150" rx="6" />
+        <rect class="head" x="575" y="180" width="210" height="22" rx="6" />
+        <rect class="head" x="575" y="194" width="210" height="8" />
+        <text class="tname" x="583" y="195">bookings</text>
+        <text class="fld" x="583" y="218"><tspan class="key">PK</tspan> id · <tspan class="key">UQ</tspan> reference</text>
+        <text class="fld" x="583" y="232"><tspan class="fk">FK</tspan> property_id → properties.id</text>
+        <text class="fld" x="583" y="246"><tspan class="fk">FK</tspan> guest_id → users.id</text>
+        <text class="fld" x="583" y="260">check_in · check_out · nights</text>
+        <text class="fld" x="583" y="274">nightly_subtotal</text>
+        <text class="fld" x="583" y="288">cleaning_fee · service_fee</text>
+        <text class="fld" x="583" y="302">total_price · status</text>
+        <text class="fld" x="583" y="316">created_at</text>
+
+        <!-- cancellations -->
+        <rect class="box" x="850" y="160" width="140" height="120" rx="6" />
+        <rect class="head" x="850" y="160" width="140" height="22" rx="6" />
+        <rect class="head" x="850" y="174" width="140" height="8" />
+        <text class="tname" x="858" y="175">cancellations</text>
+        <text class="fld" x="858" y="198"><tspan class="key">PK</tspan> id</text>
+        <text class="fld" x="858" y="212"><tspan class="key">UQ</tspan> booking_id</text>
+        <text class="fld" x="858" y="226"><tspan class="fk">FK</tspan> cancelled_by</text>
+        <text class="fld" x="858" y="240">reason</text>
+        <text class="fld" x="858" y="254">refund_amount</text>
+        <text class="fld" x="858" y="268">refund_percent · override</text>
+
+        <!-- booking nights -->
+        <rect class="box" x="850" y="365" width="140" height="115" rx="6" />
+        <rect class="head" x="850" y="365" width="140" height="22" rx="6" />
+        <rect class="head" x="850" y="379" width="140" height="8" />
+        <text class="tname" x="858" y="380">booking_nights</text>
+        <text class="fld" x="858" y="403"><tspan class="key">PK</tspan> id</text>
+        <text class="fld" x="858" y="417"><tspan class="fk">FK</tspan> booking_id</text>
+        <text class="fld" x="858" y="431"><tspan class="fk">FK</tspan> property_id</text>
+        <text class="fld" x="858" y="445">date</text>
+        <text class="fld" x="858" y="459"><tspan class="key">UQ</tspan> (property_id, date)</text>
+
+        <!-- relationships -->
+        <path class="rel" d="M210 250 H285" />
+        <text class="reltext" x="220" y="242">host 1:N</text>
+
+        <path class="rel" d="M110 190 V85 H285" />
+        <text class="reltext" x="128" y="78">specialist 1:N</text>
+
+        <path class="rel" d="M85 190 V15 H680 V180" />
+        <rect class="labelbg" x="455" y="7" width="62" height="12" />
+        <text class="reltext" x="460" y="16">guest 1:N</text>
+
+        <path class="rel" d="M60 315 V515 H820 V280 H850" />
+        <rect class="labelbg" x="520" y="507" width="100" height="12" />
+        <text class="reltext" x="525" y="516">cancelled_by 1:N</text>
+
+        <path class="rel" d="M390 190 V138" />
+        <text class="reltext" x="398" y="154">1:N (nullable)</text>
+
+        <path class="rel" d="M390 320 V390" />
+        <text class="reltext" x="398" y="352">1:N</text>
+
+        <path class="rel" d="M495 250 H575" />
+        <text class="reltext" x="510" y="242">1:N</text>
+
+        <path class="rel" d="M785 225 H850" />
+        <text class="reltext" x="800" y="218">1:1</text>
+
+        <path class="rel" d="M735 330 V420 H850" />
+        <rect class="labelbg" x="740" y="404" width="26" height="12" />
+        <text class="reltext" x="744" y="413">1:N</text>
+      </svg>
+      <figcaption><b>Figure 1.</b> Entity relationships. The crow’s-foot direction is shown by the arrow head and the “1:N” label. <code>properties → booking_nights</code> is also a foreign key in the schema; it is omitted from the drawing to keep the primary booking path readable.</figcaption>
+    </figure>
+
+    <h3>5.1 Table catalogue</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Table</th><th>Purpose</th><th>Key columns</th><th>Keys and indexes</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><code>users</code></td>
+            <td>Every person: guest, host, specialist or admin.</td>
+            <td>id, full_name, email, password_hash, role, created_at</td>
+            <td>PK id; UNIQUE email; index on role. Passwords are bcrypt hashes (cost 10); the role is validated in the domain layer.</td>
+          </tr>
+          <tr>
+            <td><code>properties</code></td>
+            <td>A home submitted by a host, with its curation state and marketing details.</td>
+            <td>id, host_id, title, location, nightly_rate, status, plum_score, image_url, tagline, description, bedrooms, bathrooms, max_guests, created_at</td>
+            <td>PK id; FK host_id → users; indexes on status and host_id. <code>status</code> is DRAFT, INSPECTION_PENDING, APPROVED or REJECTED.</td>
+          </tr>
+          <tr>
+            <td><code>inspection_slots</code></td>
+            <td>A 90-minute Plum Test visit. A slot can be open, claimed by a property, completed or cancelled.</td>
+            <td>id, specialist_id, property_id (nullable), slot_datetime, status, report_notes, score, completed_at, created_at</td>
+            <td>PK id; FK specialist_id → users; FK property_id → properties with ON DELETE SET NULL; indexes on slot_datetime and status.</td>
+          </tr>
+          <tr>
+            <td><code>availability_calendars</code></td>
+            <td>The host’s intent for each date: open or closed, and an optional custom price.</td>
+            <td>id, property_id, date, is_available, custom_price</td>
+            <td>PK id; FK property_id → properties; UNIQUE (property_id, date); supporting index. One row per property per night.</td>
+          </tr>
+          <tr>
+            <td><code>bookings</code></td>
+            <td>A confirmed reservation with its financial snapshot.</td>
+            <td>id, reference, property_id, guest_id, check_in, check_out, nights, nightly_subtotal, cleaning_fee, service_fee, total_price, status, created_at</td>
+            <td>PK id; UNIQUE reference; FKs to properties and users; indexes on (property_id, check_in, check_out), guest_id and status.</td>
+          </tr>
+          <tr>
+            <td><code>booking_nights</code></td>
+            <td>One row per reserved night; the ledger that makes overlapping reservations impossible.</td>
+            <td>id, booking_id, property_id, date</td>
+            <td>PK id; FKs to bookings and properties; <b>UNIQUE (property_id, date)</b>; index on booking_id.</td>
+          </tr>
+          <tr>
+            <td><code>cancellations</code></td>
+            <td>The refund record for a cancelled booking, including policy and admin override.</td>
+            <td>id, booking_id, cancelled_by, reason, refund_amount, refund_percent, admin_override, created_at</td>
+            <td>PK id; <b>UNIQUE booking_id</b>; FKs to bookings and users. The unique key makes a second refund impossible.</td>
+          </tr>
+          <tr>
+            <td><code>plum_meta</code></td>
+            <td>Bootstrap marker, not a business entity.</td>
+            <td>key, value, updated_at</td>
+            <td>PK key. Stores the schema/seed version so a cold start does not re-run the bootstrap.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>5.2 Relationships and cardinality</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Relationship</th><th>Cardinality</th><th>Foreign key</th><th>Rule and referential action</th></tr></thead>
+        <tbody>
+          <tr><td>User (host) → properties</td><td>1 : N</td><td>properties.host_id</td><td>A host owns many homes; deleting a user cascades to their properties.</td></tr>
+          <tr><td>User (guest) → bookings</td><td>1 : N</td><td>bookings.guest_id</td><td>A guest makes many reservations; deleting a user cascades to their bookings.</td></tr>
+          <tr><td>User (specialist) → inspection_slots</td><td>1 : N</td><td>inspection_slots.specialist_id</td><td>A specialist publishes many slots; deleting the specialist cascades.</td></tr>
+          <tr><td>User → cancellations</td><td>1 : N</td><td>cancellations.cancelled_by</td><td>Records who cancelled for audit; deleting the user cascades.</td></tr>
+          <tr><td>Property → inspection_slots</td><td>1 : N (optional)</td><td>inspection_slots.property_id</td><td>A slot is unclaimed until a host books it. If the property is deleted, the slot remains with a null property.</td></tr>
+          <tr><td>Property → availability_calendars</td><td>1 : N</td><td>availability_calendars.property_id</td><td>One calendar row per date; deleting the property cascades.</td></tr>
+          <tr><td>Property → bookings</td><td>1 : N</td><td>bookings.property_id</td><td>A home has many bookings; deleting it cascades.</td></tr>
+          <tr><td>Property → booking_nights</td><td>1 : N</td><td>booking_nights.property_id</td><td>Denormalised for the uniqueness guarantee; the property-level unique key is what prevents overlap.</td></tr>
+          <tr><td>Booking → booking_nights</td><td>1 : N</td><td>booking_nights.booking_id</td><td>Every reserved night belongs to exactly one booking; deleting a booking cascades.</td></tr>
+          <tr><td>Booking → cancellation</td><td>1 : 0..1</td><td>cancellations.booking_id (UNIQUE)</td><td>A booking can be cancelled at most once; a second cancellation is rejected by the unique index.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>5.3 Rules encoded in the schema and domain</h3>
+    <ul>
+      <li><b>Approval:</b> a specialist score of 85 or above sets the property to APPROVED; below 85 sets REJECTED and sends it to the admin queue. Admins may override either outcome.</li>
+      <li><b>Availability:</b> a night is available only if the host has not closed it <i>and</i> no confirmed booking holds it. The booking calendar projects both sources; the host calendar marks reserved nights separately.</li>
+      <li><b>Booking:</b> dates must be valid, at least one night and at most 30; check-in cannot be in the past; the property must still be APPROVED. Pricing uses the custom price per night when present, otherwise the base rate, plus €180 cleaning and 8% service.</li>
+      <li><b>Night ledger:</b> the unique <code>(property_id, date)</code> index plus the <code>booking_nights_closed_guard</code> trigger make the insert fail rather than create an inconsistent booking. The whole batch rolls back on either conflict.</li>
+      <li><b>Cancellation:</b> only a CONFIRMED booking can be cancelled; the refund follows the check-in window; the cancellation, night deletion and calendar release commit in one batch.</li>
+      <li><b>Admin override:</b> a refund may be adjusted up to the booking total and is marked <code>admin_override = true</code>; it never exceeds what the guest paid.</li>
+    </ul>
+
+    <h3>5.4 Data lifecycle and seed</h3>
+    <p>The authoring dataset is generated in <code>prisma/seed.mjs</code> against a local SQLite file, then exported to SQL statements in <code>src/lib/d1-seed-sql.ts</code>. The D1 database is empty in a new environment, and the platform does not expose arbitrary SQL to the deployer, so <code>src/lib/d1-bootstrap.ts</code> creates the schema and demo data on first use. Every statement is <code>CREATE … IF NOT EXISTS</code> or <code>INSERT OR IGNORE</code>, which makes concurrent cold starts harmless. A version marker in <code>plum_meta</code> short-circuits later boots.</p>
+    <p>The seed contains 9 users, 13 homes (9 approved, 2 awaiting inspection, 1 rejected, 1 draft), 7 bookings including two cancellations, 150 calendar days per home and 21 inspection slots in completed, available and booked states. It is anchored to the day it is generated so the demo always has future dates. The seed’s variety is intentional: every status and every role can be demonstrated without editing the database.</p>
+    <div class="note"><b>Schema change procedure</b>Update <code>prisma/schema.prisma</code>, mirror the DDL in <code>d1-bootstrap.ts</code>, bump <code>SEED_VERSION</code>, regenerate the Prisma client and re-export the seed. The committed SQLite migrations support the authoring database, not the deployed D1 database.</div>
+  </section>
+
+  <!-- 6 -->
+  <section id="interface" class="major">
+    <p class="eyebrow">06</p>
+    <h2>Interface decisions and improvements</h2>
+    <div class="rule"></div>
+
+    <h3>6.1 Design direction</h3>
+    <p>The interface takes its cues from editorial hospitality rather than SaaS dashboards. The palette is warm cream, charcoal ink and antique gold, with moss, amber and wine reserved for approval, in-progress and destructive states. Headings use Fraunces, a display serif; interface text uses Inter. The intent is that the public site feels like a travel publication and the portals feel like a private concierge desk, while sharing one visual language.</p>
+    <p>The most important interface decision was to make <b>evidence</b> visible at the point of decision: every property card shows the Plum score; the detail page repeats it next to the inspection context; the booking panel shows the full quote; the cancellation dialog shows the refund before the destructive button. Trust is not a banner — it is the presence of the facts needed to act.</p>
+    <p>Role-aware navigation keeps each portal focused: a host sees “Overview”, “Add a home” and “Explore homes”; a specialist sees “Inspections” and “The collection”; an admin sees “Operations”. The dashboard layout enforces authentication once, and each page enforces its role. Empty states explain the next action rather than leaving a blank table.</p>
+
+    <h3>6.2 Changes made after testing</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Observation during testing</th><th>Change made</th><th>Effect</th></tr></thead>
+        <tbody>
+          <tr><td>Testers could see a nightly rate but hesitated at “Confirm &amp; Pay” because the total was not yet visible.</td><td>Added a live quote with nightly subtotal, cleaning, service fee and total before the button; kept the button disabled until the range is complete.</td><td>No surprise charges; fewer abandoned attempts; the server still recalculates the total.</td></tr>
+          <tr><td>The calendar looked clean but testers could not tell why a date was unselectable.</td><td>Added a legend (selected / your stay / unavailable), strike-through for blocked dates, and a gold dot for custom prices.</td><td>Users could distinguish host closures from reservations and custom pricing without guessing.</td></tr>
+          <tr><td>Cancellation felt risky; testers asked “how much will I get back?”</td><td>Replaced the immediate action with a modal that previews the refund, percentage and policy tiers, and requires a reason of at least 10 characters.</td><td>Informed consent; cancellations are auditable; accidental clicks are avoidable.</td></tr>
+          <tr><td>An admin could reject a home with a single click during a quick walkthrough.</td><td>Added an explicit two-step rejection (“Yes, reject” / “Cancel”).</td><td>Destructive decisions require deliberate confirmation.</td></tr>
+          <tr><td>A stale calendar produced a generic failure when another guest won the race.</td><td>Mapped database conflicts to specific 409 messages: dates just reserved, night just closed, already cancelled, no longer eligible.</td><td>Users know whether to retry, pick new dates or contact support; nothing partially commits.</td></tr>
+          <tr><td>Empty dashboards looked broken to first-time users.</td><td>Added instructive empty states with a primary action (“Explore the collection”, “Submit your first home”, “Publish a slot”).</td><td>New users have an obvious next step.</td></tr>
+          <tr><td>Currency changed from GBP to EUR and the old symbol survived in copy and the README.</td><td>Centralised formatting in <code>eur()</code>; added the “Now in euros” announcement banner; scanned the source for £/GBP; corrected the last README reference.</td><td>Every visible amount and label is consistent; the pricing change is announced rather than silent.</td></tr>
+          <tr><td>Long tables overflowed on narrow screens.</td><td>Wrapped tables in horizontal scroll containers with minimum widths; stacked key layouts at small breakpoints.</td><td>The page remains usable on a phone without shrinking text to illegibility.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>6.3 Accessibility</h3>
+    <p>Accessibility was treated as part of the interface rather than a final checklist. The implementation includes a skip link and landmarks; labelled form fields; error regions with <code>role="alert"</code>; <code>aria-live</code> updates for the booking quote; <code>aria-pressed</code> on calendar dates; a modal with a focus trap, Escape handling and focus restoration; visible focus rings; and text contrast chosen for WCAG AA. Status is never conveyed by colour alone — badges carry words as well as tone. A full automated and assistive-technology audit is still recommended before a public launch; this project did not claim to have completed one.</p>
+
+    <h3>6.4 Currency change</h3>
+    <p>The application now presents every monetary value in euros. The change was made at the presentation boundary: a single <code>eur()</code> helper wraps <code>Intl.NumberFormat</code> with <code>currency: "EUR"</code>, and all pages use it. A slim announcement banner above the header states “Now in euros” and explains that nightly rates, fees and refunds are in EUR. The footer repeats “Prices in euros (EUR)”. The README’s pricing formula and the field labels (“Base nightly rate in euros”) were aligned.</p>
+    <p>Amounts were <b>re-denominated, not converted at an exchange rate</b>. The seed and host-entered rates are authored values; the application does not call an FX service. That is appropriate for a demonstration and is stated explicitly in the limitations. A production system would need a rate source, a rounding policy, historical rate storage and tax treatment per jurisdiction.</p>
+  </section>
+
+  <!-- 7 -->
+  <section id="ai" class="major">
+    <p class="eyebrow">07</p>
+    <h2>Use of free AI tools</h2>
+    <div class="rule"></div>
+    <p>AI tools were used as assistants, not as authorities. Every generated change was read, executed, tested and either accepted, corrected or rejected. No real user data, credentials or payment information was placed in a prompt; all demo accounts and homes are fictional.</p>
+
+    <h3>7.1 Tools and models used</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tool</th><th>Model / access</th><th>How it was used</th><th>Limits observed</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><b>Codebuff coding agent (“Buffy”)</b></td>
+            <td>Freebuff’s agent interface, using a platform-selected frontier large language model. The exact model identifier is not exposed in the session, so this report does not claim a specific version. No fine-tuned or self-hosted model was used.</td>
+            <td>Implementation, refactoring, schema and SQL review, debugging, seed-data generation, accessibility review, documentation drafts and consistency checks.</td>
+            <td>Confident but sometimes wrong about runtime constraints; required verification against D1/Prisma documentation and the running app.</td>
+          </tr>
+          <tr>
+            <td><b>Web research / search agent</b></td>
+            <td>Free web search and page-reading tools.</td>
+            <td>Company background, founding details, funding, Plum Test criteria and source URLs.</td>
+            <td>Public pages can be paywalled or outdated; figures were cross-checked and treated as context.</td>
+          </tr>
+          <tr>
+            <td><b>Browser preview (Chromium)</b></td>
+            <td>Freebuff’s built-in browser.</td>
+            <td>Inspecting the rendered application and checking the published preview during the build.</td>
+            <td>Not a substitute for a real device or assistive-technology test.</td>
+          </tr>
+          <tr>
+            <td><b>Playwright screenshot script</b></td>
+            <td>Open-source browser automation (not an AI model).</td>
+            <td>Deterministic capture of the 13 screenshots used in the guide and deck.</td>
+            <td>Needed retries for client hydration; documented in section 8.</td>
+          </tr>
+          <tr>
+            <td><b>Application AI</b></td>
+            <td>None.</td>
+            <td>No AI model is called by the running app; there is no AI API key in the codebase.</td>
+            <td>Recommendations and scoring are rule-based for auditability.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>7.2 Examples of contribution</h3>
+    <ol>
+      <li><b>Schema and D1 bootstrap.</b> The agent drafted the seven-table Prisma schema, the matching <code>CREATE TABLE</code> statements and the idempotent seed loader. The draft assumed native enums and Prisma interactive transactions; these were rejected after checking SQLite and D1 documentation, and replaced with validated strings and an atomic batch.</li>
+      <li><b>Booking correctness.</b> Given the concurrency requirement, the agent proposed the night-ledger design: one row per reserved night, a unique <code>(property_id, date)</code> index, a closed-night trigger and a single <code>db.batch()</code>. The design was then tested with two simultaneous requests; the result (one 201, one 409, one row) is recorded in section 8.</li>
+      <li><b>Cancellation and refunds.</b> The agent generated the refund tiers, the cancellation dialog and the batch that updates the booking, records the refund, deletes the night ledger and reopens the calendar. The policy was checked against the brief and the numbers were verified by hand.</li>
+      <li><b>Seed data.</b> A realistic dataset of nine users, thirteen homes, seven bookings, 150 days per home and 21 slots was generated in <code>prisma/seed.mjs</code>, then reviewed for date coherence and exported to D1 SQL.</li>
+      <li><b>Interface and accessibility review.</b> The agent identified missing focus management in the cancellation dialog and added a focus trap, Escape handling and focus restoration; it also added <code>aria-live</code> for the quote and explicit empty states.</li>
+      <li><b>Debugging the screenshot pipeline.</b> Captures occasionally submitted a native form before React hydrated. The agent added a hydration wait and retry logic to the Playwright script, producing repeatable screenshots for the guide.</li>
+      <li><b>Documentation.</b> Drafts of this report, the user guide and the slide deck were generated from the codebase and then edited for accuracy, tone and consistency with the actual UI labels.</li>
+    </ol>
+
+    <h3>7.3 What the AI got wrong, and how it was caught</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>AI suggestion</th><th>Why it was wrong here</th><th>Correction</th></tr></thead>
+        <tbody>
+          <tr><td>Use Prisma enums and interactive transactions for booking.</td><td>SQLite has no native enum in Prisma, and D1 does not support interactive transactions; Prisma’s D1 adapter runs statements individually.</td><td>String statuses validated in <code>src/lib/constants.ts</code>; a raw D1 batch plus unique index and trigger for booking.</td></tr>
+          <tr><td>Read availability, then insert the booking.</td><td>Two requests could both pass the read and both insert, selling the same night.</td><td>The insert itself is the claim; the unique night index decides the winner and the batch rolls back the loser.</td></tr>
+          <tr><td>A single “reject” click for admin moderation.</td><td>Too easy to remove a home accidentally during a demo.</td><td>Two-step confirmation with an explicit “Yes, reject”.</td></tr>
+          <tr><td>“150-point score” wording.</td><td>The inspection has 150 checks but the recorded score is out of 100; conflating them undermines the audit trail.</td><td>Consistent wording: 150 checks aggregated into a 0–100 score; pass mark 85.</td></tr>
+          <tr><td>Currency change limited to the formatter.</td><td>Hardcoded £ remained in the README and would have drifted from the UI.</td><td>Global search for £/GBP, corrected copy, banner and footer statement, screenshots recaptured in EUR.</td></tr>
+          <tr><td>Capture screenshots immediately after navigation.</td><td>Client forms were not hydrated; the script sometimes triggered a native GET submit.</td><td>Wait for hydration and retry sign-in up to three times.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 8 -->
+  <section id="testing" class="major">
+    <p class="eyebrow">08</p>
+    <h2>Testing, results, difficulties and solutions</h2>
+    <div class="rule"></div>
+
+    <h3>8.1 Test approach</h3>
+    <p>Testing was black-box and integration-focused. The application was run locally against a fresh D1 database and exercised over HTTP, with the browser used for visual and interaction checks. The priorities were the places where a demo can look correct but behave incorrectly: concurrency, authorisation boundaries, money and date handling, the inspection state machine, and the cancellation/refund batch. There is no automated test suite in the repository yet; that is an honest limitation, not a claim of coverage.</p>
+    <p>Two kinds of evidence are distinguished below. <b>Build-time tests</b> were executed over HTTP against the running app and repeated in local workerd with a fresh D1 database, as recorded in the project build log. <b>Documentation-pass checks</b> were run for this revision and are limited to static verification and screenshot inspection; the full HTTP suite was not re-executed because the documentation environment did not expose a Node.js toolchain. The distinction matters: a green table row is not a substitute for a test that was actually run in this session.</p>
+
+    <h3>8.2 Results</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>#</th><th>Scenario</th><th>Expected result</th><th>Observed result</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Guest signs in and is redirected to the guest portal.</td><td>Session cookie set; guest dashboard renders own trips.</td><td>Redirected to <code>/dashboard/guest</code>; only the guest’s bookings shown.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>2</td><td>Invalid email/password.</td><td>401 with a non-revealing message; no session.</td><td>“That email and password combination is not recognised.”</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>3</td><td>Guest opens the admin portal directly.</td><td>Denied; no admin data rendered.</td><td>Role guard redirects/denies; no data leak.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>4</td><td>Two simultaneous bookings for identical dates.</td><td>One 201, one 409, exactly one booking and one night ledger.</td><td>One confirmation, one friendly conflict, one row.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>5</td><td>Booking a host-closed night.</td><td>409; no booking or night rows committed.</td><td>Clear “closed by the host” message; batch rolled back.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>6</td><td>Booking with a past check-in or an invalid range.</td><td>400 with a specific message.</td><td>Rejected before any write.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>7</td><td>Tampering with the displayed total.</td><td>Server ignores client amount and computes its own.</td><td>Stored total matches the server quote.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>8</td><td>Owner opens confirmation and invoice; another guest tries the same URLs.</td><td>Owner allowed; other guest denied.</td><td>Owner renders; other guest receives 403/404.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>9</td><td>Cancel more than 14 days before check-in.</td><td>100% refund; all nights released.</td><td>Refund equals total; nights return to <code>is_available = true</code>.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>10</td><td>Cancel 7–14 days before check-in.</td><td>50% refund; nights released.</td><td>Half the total recorded; calendar released.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>11</td><td>Cancel under 7 days.</td><td>0% refund; nights released.</td><td>Zero refund recorded; calendar released.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>12</td><td>Cancel the same booking twice.</td><td>409; one cancellation record.</td><td>Second request rejected by unique <code>booking_id</code>.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>13</td><td>Host closes/opens a night and sets a custom price.</td><td>Calendar persists; booking uses the custom price.</td><td>Saved; quote uses the override; reserved night cannot be reopened.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>14</td><td>Host edits another host’s listing or calendar.</td><td>403; no change.</td><td>Ownership check rejects the request.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>15</td><td>Specialist records 92, then 70 on another home.</td><td>92 auto-approves; 70 refers to curation.</td><td>Statuses changed accordingly; notes stored.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>16</td><td>Admin overrides a rejection to approved, and a refund above the total.</td><td>Override allowed; refund capped at the total.</td><td>Status changed; over-limit refund rejected with the cap.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>17</td><td>Specialist publishes and withdraws an unclaimed slot; tries to withdraw a booked one.</td><td>Allowed then refused for a claimed slot.</td><td>Slot available/removed/refused as expected.</td><td><span class="pill green">Pass</span></td></tr>
+          <tr><td>18</td><td>EUR pricing across public pages, portals, invoices and banner.</td><td>Every amount in €; no £ or GBP in the UI.</td><td>Source scan clean; screenshots show the banner and € prices.</td><td><span class="pill green">Pass</span> <span class="pill neutral">static</span></td></tr>
+          <tr><td>19</td><td>Hosted preview after the currency change.</td><td>Same EUR build as local.</td><td>Published preview still served the older GBP build at the time of writing; it needs a redeploy.</td><td><span class="pill amber">Known gap</span></td></tr>
+          <tr><td>20</td><td>Automated WCAG audit and physical mobile-device test.</td><td>Documented audit results.</td><td>Not run; only code-level and responsive checks were performed.</td><td><span class="pill neutral">Not run</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>8.3 Difficulties and solutions</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Difficulty</th><th>Why it occurred</th><th>Solution</th><th>Residual risk</th></tr></thead>
+        <tbody>
+          <tr><td><b>D1 has no interactive transactions</b></td><td>SQLite edge database with a batch API; Prisma’s D1 adapter executes statements individually.</td><td>One atomic <code>db.batch()</code>; correctness enforced by a unique night index, a unique cancellation and a closed-night trigger.</td><td>Raw SQL is less portable; a move to Postgres would require rewriting these paths as transactions.</td></tr>
+          <tr><td><b>Double-booking race</b></td><td>A read-then-write flow leaves a gap between checking availability and inserting.</td><td>The insert is the claim; the unique index rejects the loser and the whole batch rolls back.</td><td>None observed; the guarantee is database-level.</td></tr>
+          <tr><td><b>Partial cancellation</b></td><td>Updating a booking, inserting a refund and reopening dates are separate facts.</td><td>All four statements execute in one batch; the unique cancellation index prevents a second refund.</td><td>A future payment-provider integration must be idempotent and reconciled with the DB record.</td></tr>
+          <tr><td><b>Date drift</b></td><td>JavaScript dates and UTC formatting can move a calendar day by one across time zones.</td><td>Date-only values are stored at UTC midnight; utilities parse and format ISO calendar dates rather than local timestamps.</td><td>None observed in the tested time zone; a broader device matrix would help.</td></tr>
+          <tr><td><b>No native enums in SQLite</b></td><td>Prisma cannot express a native enum for this provider.</td><td>Status strings centralised in <code>src/lib/constants.ts</code> and validated at every boundary.</td><td>A direct SQL write outside the app could still insert an invalid status.</td></tr>
+          <tr><td><b>Cold-start bootstrap</b></td><td>A new D1 database starts empty; the deployer has no arbitrary SQL console.</td><td>Idempotent schema and seed statements, a version marker and chunked batches; a failed bootstrap is retried on the next request.</td><td>First request is slower; concurrent cold starts are safe because every statement is idempotent.</td></tr>
+          <tr><td><b>Screenshot non-determinism</b></td><td>The React form submitted before hydration, producing a native GET request.</td><td>Wait for hydration and retry sign-in; hide the Next.js dev overlay.</td><td>Visual capture is not a functional test; it is evidence, not verification.</td></tr>
+          <tr><td><b>Currency rollout</b></td><td>Prices were formatted in several places and copy contained a pound sign.</td><td>Single <code>eur()</code> formatter, EUR labels, banner, footer statement and a global source scan.</td><td>Re-denomination is not FX conversion; production would need rates and tax rules.</td></tr>
+          <tr><td><b>Stale published preview</b></td><td>The public preview was deployed before the euro change; the local build is newer.</td><td>Flagged explicitly; the preview needs a fresh deployment of the current manifest.</td><td>Anyone opening the old URL sees GBP until it is redeployed.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 9 -->
+  <section id="functionality" class="major">
+    <p class="eyebrow">09</p>
+    <h2>Functionality, limitations and improvements</h2>
+    <div class="rule"></div>
+
+    <h3>9.1 Functionalities implemented</h3>
+    <div class="two">
+      <div class="card">
+        <h4>Guest and public</h4>
+        <ul>
+          <li>Editorial landing page with Plum Test explanation and featured approved homes.</li>
+          <li>Approved-only collection with title/location search and three sort orders.</li>
+          <li>Property detail with score, host, capacity, description and live pricing calendar.</li>
+          <li>Server-priced booking with reference, confirmation and printable invoice.</li>
+          <li>Guest dashboard with upcoming/past trips, spend, invoice links and cancellation.</li>
+          <li>Refund preview, policy tiers, reason capture and automatic date release.</li>
+          <li>Consistent EUR presentation and an announcement banner.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h4>Host, specialist and admin</h4>
+        <ul>
+          <li>Host listing submission, title/base-rate editing and portfolio metrics.</li>
+          <li>365-day calendar with open/closed nights, custom prices and reserved-night protection.</li>
+          <li>Plum Test scheduling against specialist-published slots.</li>
+          <li>Specialist slot publishing/withdrawal and an audit form with notes and score.</li>
+          <li>Automatic approval at 85+, referral below, admin override either way.</li>
+          <li>Admin review queue, booking monitor, refund override with cap and audit label.</li>
+          <li>Role-based authentication, session cookies and ownership checks on every mutation.</li>
+          <li>Idempotent D1 bootstrap and a deployable Workers build.</li>
+        </ul>
+      </div>
+    </div>
+
+    <h3>9.2 Existing limitations</h3>
+    <ul>
+      <li><b>Simulated payments and email.</b> No card is charged, no confirmation email is sent, and refunds are database records rather than money movements.</li>
+      <li><b>Print-based invoice.</b> “Download invoice” opens the browser print dialog; there is no server-generated PDF.</li>
+      <li><b>Stock photography.</b> Hosts choose from curated Unsplash images; there is no upload, moderation or image optimisation pipeline.</li>
+      <li><b>No background jobs.</b> Reminders, payout reconciliation and scheduled status transitions are out of scope.</li>
+      <li><b>Demo credentials.</b> Seeded accounts share simple public passwords; specialist/admin accounts are not self-service.</li>
+      <li><b>No automated tests or rate limiting.</b> The HTTP test matrix is manual; auth and booking endpoints are not throttled.</li>
+      <li><b>Currency is display-level.</b> EUR is the only presentation currency and amounts are re-denominated, with no FX source, historical rates or VAT engine.</li>
+      <li><b>Accessibility is not fully audited.</b> Keyboard and semantic support are implemented, but no assistive-technology or WCAG conformance audit was completed.</li>
+      <li><b>Published preview may lag.</b> The deployed preview was built before the currency change; the local build is the current source of truth.</li>
+    </ul>
+
+    <h3>9.3 Possible improvements</h3>
+    <ol>
+      <li><b>Payments:</b> Stripe Payment Intents, webhook-driven confirmation and idempotent refunds reconciled with the cancellation record.</li>
+      <li><b>Email:</b> transactional messages for confirmation, cancellation, inspection results and host reminders.</li>
+      <li><b>Media:</b> direct-to-R2 uploads with image validation, responsive variants and a moderation step before publication.</li>
+      <li><b>Calendar sync:</b> iCal import/export and two-way sync with Airbnb/Vrbo to prevent external double bookings.</li>
+      <li><b>Quality programme:</b> structured inspection checklists instead of a single score, photo evidence and re-inspection scheduling.</li>
+      <li><b>Operational tooling:</b> audit log for admin overrides, CSV exports, payout statements and dispute notes.</li>
+      <li><b>Testing and hardening:</b> Playwright end-to-end tests in CI, including a parallel booking test; rate limiting and bot protection on auth and booking routes.</li>
+      <li><b>Localisation and tax:</b> selectable display currency backed by an explicit FX source, VAT rules per jurisdiction and compliant invoices.</li>
+      <li><b>Accessibility:</b> WCAG 2.2 AA audit, screen-reader testing, reduced-motion support and automated axe checks in CI.</li>
+    </ol>
+  </section>
+
+  <!-- 10 -->
+  <section id="conclusion">
+    <p class="eyebrow">10</p>
+    <h2>Conclusion</h2>
+    <div class="rule"></div>
+    <p>The project turns a marketing promise into an operating system. Plum Guide’s “top 3%” claim becomes a status machine with an auditable score; the booking promise becomes a unique night ledger and an atomic batch; the refund policy becomes a calculated record that releases the calendar in the same transaction. Four portals present the same facts to the four people who need them, with permissions that are checked on the server rather than implied by the interface.</p>
+    <p>The most valuable lesson was that the hard part of this domain is not the visual design. It is the interaction between a database constraint, a user’s expectation and a policy. A friendly error message is useful; a schema that cannot represent the bad state is better. The second lesson was about scope: a demonstration should be honest about what it simulates, and that honesty makes the implemented parts more credible, not less.</p>
+    <p>The build is a solid foundation rather than a finished commercial product. Payments, email, media, external calendars and a full accessibility audit are the next layer. The current system is intentionally small enough to explain end to end, and complete enough that every claim in this report can be demonstrated in the running application.</p>
+  </section>
+
+  <!-- 11 -->
+  <section id="references" class="major">
+    <p class="eyebrow">11</p>
+    <h2>References</h2>
+    <div class="rule"></div>
+    <p style="font-size:12.5px;color:var(--muted)">All web sources accessed 29 October 2026. Company figures are reported as published; they are not independently audited.</p>
+    <ol class="refs">
+      <li>Plum Guide. <i>Our story: curating the world’s best rental homes.</i> <a href="https://www.plumguide.com/our-story">https://www.plumguide.com/our-story</a></li>
+      <li>Wikipedia. <i>The Plum Guide.</i> <a href="https://en.wikipedia.org/wiki/The_Plum_Guide">https://en.wikipedia.org/wiki/The_Plum_Guide</a> (company profile with citations to the Evening Standard, TechCrunch, Business Insider and The New York Times).</li>
+      <li>Butcher, M. (20 March 2019). “The Plum Guide raises $18.5M to expand its ‘vacation homes for the elite’ service.” <i>TechCrunch.</i> <a href="https://techcrunch.com/2019/03/20/the-plum-guide-raises-18-5m-to-expand-its-vacation-homes-for-the-elite-service/">techcrunch.com</a></li>
+      <li>PhocusWire (3 October 2018). “STARTUP STAGE: The Plum Guide wants to be the Michelin Guide for vacation rentals.” <a href="https://www.phocuswire.com/Startup-Stage-Plum-Guide">phocuswire.com</a></li>
+      <li>Business Insider (3 July 2019). “How the Plum Guide Wants to Become ‘Michelin Guide’ of Home Rentals.” <a href="https://www.businessinsider.com/plum-guide-wants-to-be-michelin-guide-of-home-rentals-2019-7">businessinsider.com</a></li>
+      <li>Plum Guide. Public website and collection experience. <a href="https://www.plumguide.com/">https://www.plumguide.com/</a></li>
+      <li>Cloudflare. <i>D1 Database: Worker API — batch.</i> <a href="https://developers.cloudflare.com/d1/worker-api/d1-database/">developers.cloudflare.com/d1</a></li>
+      <li>Prisma. <i>Cloudflare D1 adapter.</i> <a href="https://www.prisma.io/docs/orm/overview/databases/cloudflare-d1">prisma.io/docs</a></li>
+      <li>Next.js. <i>App Router documentation.</i> <a href="https://nextjs.org/docs/app">nextjs.org/docs/app</a></li>
+      <li>Cloudflare. <i>Workers documentation.</i> <a href="https://developers.cloudflare.com/workers/">developers.cloudflare.com/workers</a></li>
+      <li>W3C. <i>Web Content Accessibility Guidelines (WCAG) 2.2.</i> <a href="https://www.w3.org/TR/WCAG22/">w3.org/TR/WCAG22</a></li>
+      <li>OWASP. <i>Application Security Verification Standard.</i> <a href="https://owasp.org/www-project-application-security-verification-standard/">owasp.org</a></li>
+    </ol>
+  </section>
+
+  <!-- 12 -->
+  <section id="appendix" class="major">
+    <p class="eyebrow">12</p>
+    <h2>Appendix</h2>
+    <div class="rule"></div>
+
+    <h3>A. Demo accounts</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Role</th><th>Email</th><th>Password</th><th>Portal</th></tr></thead>
+        <tbody>
+          <tr><td>Guest</td><td><code>guest@plumguide.com</code></td><td><code>Guest123!</code></td><td><code>/dashboard/guest</code></td></tr>
+          <tr><td>Host</td><td><code>host@plumguide.com</code></td><td><code>Host123!</code></td><td><code>/dashboard/host</code></td></tr>
+          <tr><td>Specialist</td><td><code>specialist@plumguide.com</code></td><td><code>Specialist123!</code></td><td><code>/dashboard/specialist</code></td></tr>
+          <tr><td>Administrator</td><td><code>admin@plumguide.com</code></td><td><code>Admin123!</code></td><td><code>/dashboard/admin</code></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>B. Main routes</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Route</th><th>Access</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>/</code>, <code>/properties</code>, <code>/properties/[id]</code></td><td>Public</td><td>Landing, approved collection, property detail and booking</td></tr>
+          <tr><td><code>/login</code>, <code>/signup</code></td><td>Public</td><td>Authentication and guest/host registration</td></tr>
+          <tr><td><code>/bookings/[id]/confirmation</code>, <code>/invoice</code></td><td>Owner or admin</td><td>Confirmation and printable invoice</td></tr>
+          <tr><td><code>/dashboard/guest</code></td><td>Guest</td><td>Trips, invoices, cancellation</td></tr>
+          <tr><td><code>/dashboard/host</code>, <code>/dashboard/host/properties/[id]</code></td><td>Host owner</td><td>Portfolio, listing management, calendar, inspection request</td></tr>
+          <tr><td><code>/dashboard/specialist</code></td><td>Specialist</td><td>Slots, diary, audit form</td></tr>
+          <tr><td><code>/dashboard/admin</code></td><td>Admin</td><td>Metrics, review queue, refund override</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>C. API surface (all mutations require a session)</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Method and route</th><th>Access</th><th>Purpose</th></tr></thead>
+        <tbody>
+          <tr><td><code>POST /api/auth/signup</code>, <code>/login</code>, <code>/logout</code></td><td>Public / session</td><td>Create account, sign in, clear session</td></tr>
+          <tr><td><code>POST /api/bookings</code></td><td>Session</td><td>Atomic reservation</td></tr>
+          <tr><td><code>POST /api/bookings/[id]/cancel</code></td><td>Owner or admin</td><td>Cancel, refund and release dates</td></tr>
+          <tr><td><code>POST /api/properties</code></td><td>Host</td><td>Create a draft listing</td></tr>
+          <tr><td><code>PATCH /api/properties/[id]</code></td><td>Owner or admin</td><td>Update title or base rate</td></tr>
+          <tr><td><code>POST /api/properties/[id]/availability</code></td><td>Owner or admin</td><td>Open/close a night or set a price</td></tr>
+          <tr><td><code>POST /api/properties/[id]/inspection-request</code></td><td>Owner</td><td>Claim a specialist slot</td></tr>
+          <tr><td><code>POST /api/specialist/slots</code>, <code>DELETE …/[id]</code></td><td>Specialist owner</td><td>Publish or withdraw a slot</td></tr>
+          <tr><td><code>POST /api/specialist/inspections/[id]</code></td><td>Specialist owner or admin</td><td>Score and complete an inspection</td></tr>
+          <tr><td><code>POST /api/admin/properties/[id]/moderate</code></td><td>Admin</td><td>Approve/reject an inspected home</td></tr>
+          <tr><td><code>POST /api/admin/cancellations/[id]/override</code></td><td>Admin</td><td>Adjust a refund within the total</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h3>D. Commands</h3>
+    <pre><code>npm install          # install dependencies; runs prisma generate
+cp .env.example .env # local CLI configuration; set AUTH_SECRET
+npm run dev          # Next.js + local D1 on http://localhost:3000
+npm run build        # prisma generate + production build
+npm run start        # serve the production build
+npm run typecheck    # TypeScript, no emit
+npm run db:seed      # regenerate the local SQLite authoring dataset
+npm run db:export:d1 # export the dataset to src/lib/d1-seed-sql.ts
+npm run db:reset     # rebuild the local SQLite dataset from scratch</code></pre>
+
+    <h3>E. Artefacts</h3>
+    <ul>
+      <li><b>This report:</b> <code>docs/report.html</code></li>
+      <li><b>User guide:</b> <code>docs/user-guide.html</code></li>
+      <li><b>Presentation:</b> <code>docs/presentation.html</code></li>
+      <li><b>Screenshots:</b> <code>docs/screenshots/01-home.png</code> … <code>13-admin-dashboard.png</code></li>
+      <li><b>Application:</b> <code>src/</code>, <code>prisma/</code>, <code>scripts/</code></li>
+      <li><b>Project overview and operations notes:</b> <code>README.md</code></li>
+    </ul>
+
+    <div class="footer">
+      <span>Plum Guide — Project report · Version 1.0</span>
+      <span>Companion documents: user-guide.html · presentation.html</span>
+    </div>
+  </section>
+
+</div>
+</body>
+</html>
