@@ -41,6 +41,7 @@ export const en = {
   "common.dashboard": "Dashboard",
   "common.join": "Join Plum",
   "common.language": "Language",
+  "common.languageError": "Couldn't switch language. Please try again.",
   "common.nightOne": "night",
   "common.nightMany": "nights",
   "common.guestOne": "guest",
@@ -447,6 +448,8 @@ const pt: Partial<Record<MessageKey, string>> = {
   "common.dashboard": "Painel",
   "common.join": "Aderir à Plum",
   "common.language": "Idioma",
+  "common.languageError":
+    "Não foi possível mudar de idioma. Tente novamente.",
   "common.nightOne": "noite",
   "common.nightMany": "noites",
   "common.guestOne": "hóspede",
