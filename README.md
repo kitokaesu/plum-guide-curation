@@ -1,412 +1,244 @@
-# Plum Guide — Curation, Inspections & Bookings
+# Plum Guide — Curadoria, Inspeções e Reservas
 
-A full-stack demonstration of the operational platform behind Plum Guide's
-"top 3% of homes": specialist **Plum Test** inspections, host availability
-management, atomic guest bookings, automated cancellation refunds and four
-role-based portals.
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-19-087EA4?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Prisma](https://img.shields.io/badge/Prisma-6-2D3748?logo=prisma&logoColor=white)
+![Cloudflare D1](https://img.shields.io/badge/Cloudflare-D1-F38020?logo=cloudflare&logoColor=white)
 
-Built with **Next.js 16 (App Router) · React 19 · TypeScript · Tailwind CSS ·
-Prisma 6 · Cloudflare D1**, with bcrypt password hashing and signed, HTTP-only
-session cookies. Prisma talks to D1 through its driver adapter, and a per-night
-ledger makes overlapping reservations impossible at the database level.
+Plataforma completa que reproduz a operação por trás da curadoria da Plum Guide — "as melhores 3% das casas". Inclui o **Plum Test** (inspeção feita por especialistas), gestão de disponibilidade pelos anfitriões, reservas atómicas de hóspedes, cancelamentos com reembolso automático e quatro portais com controlo de acessos por perfil.
 
----
-
-## Live demo
-
-A deployed build runs on Cloudflare Workers (D1 + OpenNext):
-
-- English: <https://site-ef110a907aa543e89a6159ea2358c1de.freebuff.page>
-- The header carries an **EN | PT** switch; the choice is stored in a cookie and
-the whole public site — collection, property pages, booking, confirmation and
-invoice — renders in European Portuguese.
+A aplicação é uma demonstração funcional: pagamentos e emails são simulados, mas todas as regras de negócio — pontuação mínima, preços, hierarquia de reembolsos e exclusão de reservas sobrepostas — são aplicadas no servidor e garantidas pela base de dados.
 
 ---
 
-## Documentation
+## 1. Descrição Geral
 
-- [Presentation](docs/presentation.html) — a 16:9 HTML slide deck with a scripted demo, company research, tasks and the database model. Print with `Ctrl/Cmd + P` for a PDF handout.
-- [User guide](docs/user-guide.html) — role-by-role instructions with screenshots, pricing and refund rules, and troubleshooting.
-- [Project report](docs/report.html) — research and sources, requirements, technology justification, database design, interface decisions, AI tool use, testing and limitations.
+### Tecnologias
 
-The documents are self-contained: screenshots are embedded, so each file can be shared or printed on its own.
+| Camada | Tecnologia |
+| --- | --- |
+| Framework | Next.js 16 (App Router) + React 19 |
+| Linguagem | TypeScript 5 |
+| Estilo | Tailwind CSS 3 (design system próprio) |
+| ORM | Prisma 6 com *driver adapter* D1 |
+| Base de dados | Cloudflare D1 (SQLite gerido) — localmente via Wrangler/Miniflare |
+| Autenticação | `bcryptjs` (cost 10) + JWT HS256 (`jose`) em cookie HTTP-only |
+| Deploy | Cloudflare Workers através de OpenNext |
 
----
+### Funcionalidades principais
 
-## 1. What's included
-
-| Role | Portal | Capabilities |
+| Perfil | Portal | Capacidades |
 | --- | --- | --- |
-| **Guest** | `/dashboard/guest` | Upcoming trips, booking references, printable/downloadable invoices, self-service cancellation with refund preview, trip history |
-| **Host** | `/dashboard/host` | Submit homes, schedule a Plum Test with an available specialist, manage a 365-day availability calendar with custom nightly prices, edit listing title/rate, track revenue and bookings |
-| **Specialist** | `/dashboard/specialist` | Publish and withdraw inspection slots, view booked home inspections with host contact details, record Plum Test scores and notes |
-| **Admin** | `/dashboard/admin` | Platform metrics, inspection review queue with approve/reject overrides, booking monitor, cancellation/refund overrides, member counts |
+| **Hóspede** | `/dashboard/guest` | Viagens futuras, referências de reserva, faturas imprimíveis, cancelamento com pré-visualização do reembolso, histórico |
+| **Anfitrião** | `/dashboard/host` | Submeter casas, agendar Plum Test com um especialista disponível, calendário de 365 dias com preços personalizados, editar anúncio, acompanhar receita |
+| **Especialista** | `/dashboard/specialist` | Publicar/retirar vagas de inspeção, consultar inspeções atribuídas, registar pontuação e notas |
+| **Administrador** | `/dashboard/admin` | Métricas da plataforma, fila de inspeções com aprovação/rejeição, monitorização de reservas, ajuste manual de reembolsos |
 
-Public site: editorial landing page, searchable collection of approved homes,
-property detail pages with live availability calendars and instant booking,
-login/signup, confirmation and invoice pages.
+**Site público:** página inicial editorial, coleção pesquisável de casas aprovadas, páginas de detalhe com calendário de disponibilidade e reserva imediata, autenticação, confirmação e fatura.
 
-### Core rules implemented
+### Regras de negócio implementadas
 
-- **Plum Test:** a specialist records a score out of 100. **85 or above
-  auto-approves** the property; below 85 it is rejected and referred to the
-  curation team. Admins can override either outcome for inspected homes.
-- **Availability:** a night is unavailable if the host closed it **or** a
-  confirmed reservation covers it. Hosts can set a custom price per night.
-- **Bookings:** the booking row and its reserved nights are written in one
-  atomic D1 batch. A unique `(property_id, date)` index means two guests racing
-  for the same dates produce exactly one confirmation and one friendly `409`.
-  A trigger also rejects nights the host has closed.
-- **Pricing:** `sum(nightly rates or custom prices) + €180 cleaning + 8% service
-  fee`. All money is displayed in euros (EUR); the header carries a “Now in
-  euros” announcement and the server recalculates and stores the authoritative
-  total.
-- **Cancellations:** 100% refund more than 14 days before check-in, 50% at
-  7–14 days, 0% under 7 days. Calculated on the total paid, recorded in the
-  `cancellations` table, and **every night is released back to the property
-  calendar** in the same atomic batch.
-- **Admin overrides:** refunds can be adjusted up to the booking total, marked
-  as `admin_override`.
-- **Languages:** English and European Portuguese, switched from the header
-  (`EN | PT`). The locale lives in the `plum_locale` cookie so server
-  components render the right language on first paint; every string is keyed
-  in `src/lib/i18n.ts` and Portuguese falls back to English for any missing
-  key. Prices are formatted per locale (`€1,240` in English, `1240 €` in
-  Portuguese). Host, specialist and admin portal tables remain English.
+- **Plum Test:** pontuação de 0 a 100; **≥ 85 aprova automaticamente**, abaixo disso a casa é rejeitada e encaminhada para a equipa de curadoria. O administrador pode inverter qualquer resultado.
+- **Disponibilidade:** uma noite está indisponível se o anfitrião a fechou **ou** se existe reserva confirmada que a cobre.
+- **Reservas:** a reserva e o registo de noites ocupadas são escritos num único `batch` atómico do D1. Um índice único `(property_id, date)` garante que duas reservas simultâneas para as mesmas datas produzem **exatamente uma** confirmação e um `409` amigável.
+- **Preços:** soma das noites (preço base ou personalizado) **+ €180 de limpeza + 8% de taxa de serviço**. O servidor recalcula e guarda sempre o total autoritativo; todos os valores são apresentados em euros.
+- **Cancelamentos:** reembolso de 100% a mais de 14 dias do *check-in*, 50% entre 7 e 14 dias, 0% abaixo de 7 dias. As noites são devolvidas ao calendário na mesma operação atómica.
+- **Idiomas:** inglês e português europeu, alternáveis no cabeçalho (`EN | PT`). A preferência fica no cookie `plum_locale`, pelo que o servidor já renderiza o idioma correto no primeiro *paint*.
 
 ---
 
-## 2. Quick start (local, Node.js)
+## 2. Links de Acesso
 
-Requires **Node.js 22 LTS or newer** and npm (verified on Node 22.14 and npm 10.9).
+| Ambiente | Endereço |
+| --- | --- |
+| **Aplicação online** (Cloudflare Workers + D1) | <https://site-ef110a907aa543e89a6159ea2358c1de.freebuff.page> |
+| **Servidor da unidade curricular** (VM) | `http://lab.csmiguel.pt` *(substituir pelo endereço/porta efetivamente usados na entrega)* |
+| **Repositório GitHub** | <https://github.com/kitokaesu/plum-guide-curation> |
+
+A versão publicada corre em Cloudflare Workers com uma base de dados D1 gerida. O esquema e os dados de demonstração são criados automaticamente no primeiro pedido, pelo que a aplicação fica utilizável sem qualquer passo manual de base de dados.
+
+**Contas de demonstração**
+
+| Perfil | Email | Palavra-passe |
+| --- | --- | --- |
+| Hóspede | `guest@plumguide.com` | `Guest123!` |
+| Anfitrião | `host@plumguide.com` | `Host123!` |
+| Especialista | `specialist@plumguide.com` | `Specialist123!` |
+| Administrador | `admin@plumguide.com` | `Admin123!` |
+
+O ecrã de login tem botões que preenchem estas contas automaticamente. O registo público cria apenas contas de **Hóspede** ou **Anfitrião**.
+
+---
+
+## 3. Instruções de Execução Local
+
+### Pré-requisitos
+
+| Requisito | Versão | Notas |
+| --- | --- | --- |
+| **Node.js** | 22 LTS ou superior | Testado com Node 22.14.0 |
+| **npm** | 10 ou superior | Testado com npm 10.9.2 |
+| **Git** | Qualquer versão recente | — |
+
+Não é necessário instalar Docker, PostgreSQL ou um servidor de base de dados: o `next dev` arranca uma instância local de Cloudflare D1 através do Wrangler, já incluído nas dependências.
+
+### 1. Clonar o repositório
 
 ```bash
-npm install                 # also runs prisma generate
-cp .env.example .env        # DATABASE_URL for the Prisma CLI; add AUTH_SECRET
-npm run dev                 # http://localhost:3000
+git clone https://github.com/kitokaesu/plum-guide-curation.git
+cd plum-guide-curation
 ```
 
-`next dev` starts a local Cloudflare D1 database through Wrangler using the
-committed `freebuff.wrangler.jsonc`, creates the schema and seeds the demo data
-on the first request. No separate database server is needed. Local data lives
-in `.wrangler/state`; delete that folder to start from a clean database.
+### 2. Configurar as variáveis de ambiente
 
-### Troubleshooting
+```bash
+cp .env.example .env
+```
 
-- **`next dev` errors with `internal error; reference …` while opening D1** —
-  the local Miniflare state is corrupt. Stop the server and delete `.wrangler/`
-  (`rm -rf .wrangler` on macOS/Linux, `rmdir /s /q .wrangler` on Windows), then
-  start `npm run dev` again; the schema and demo data are rebuilt automatically.
-- **`prisma generate` fails during `npm install`** — run it on its own
-  (`npx prisma generate`); no database is contacted.
-- **Port 3000 already in use** — `npx next dev -p 3001`.
-- **No homes render on a fresh install** — the first request seeds D1; reload
-  the page once after the server reports “Ready”.
+| Variável | Obrigatória | Descrição |
+| --- | --- | --- |
+| `AUTH_SECRET` | Produção | Chave de assinatura do cookie de sessão. Em desenvolvimento pode ficar por definir (existe um valor de recurso). Em produção tem de ser um segredo da plataforma, com 32+ bytes aleatórios. |
+| `DATABASE_URL` | Não | Usada **apenas** pelas ferramentas do Prisma e pelo gerador de dados de demonstração (`file:./dev.db`). A aplicação em execução lê a base de dados pelo *binding* `DB` do Cloudflare D1. |
 
-Generate a production-grade session secret with:
+Gerar um segredo adequado:
 
 ```bash
 openssl rand -base64 32
 ```
 
-### Demo accounts
+> Nunca colocar `AUTH_SECRET` numa variável `NEXT_PUBLIC_*` nem no repositório. O ficheiro `.env` já está no `.gitignore`.
 
-| Role | Email | Password |
-| --- | --- | --- |
-| Guest | `guest@plumguide.com` | `Guest123!` |
-| Host | `host@plumguide.com` | `Host123!` |
-| Specialist | `specialist@plumguide.com` | `Specialist123!` |
-| Admin | `admin@plumguide.com` | `Admin123!` |
-
-Additional seeded accounts: hosts `rafael@plumguide.com` and
-`ingrid@plumguide.com`, guest `noah@example.com`, specialists
-`julian@plumguide.com` and `sofia@plumguide.com` (same role passwords).
-
-The login screen has one-click demo account fillers. Specialist and admin
-accounts are seeded rather than self-service — public signup creates **Guest**
-or **Host** accounts.
-
-### Suggested walkthrough
-
-1. Sign in as the **host** → open *The Tuscan Farmhouse* (draft) → schedule a
-   Plum Test using an open specialist slot.
-2. Sign in as the **specialist** → open the audit form on the booked visit →
-   record a score (try `92` for an automatic pass, `70` for a referral).
-3. Sign in as the **admin** → review the inspection queue, approve/reject, and
-   adjust a refund on the cancellations table.
-4. Sign in as the **guest** → open a home, pick dates on the live calendar,
-   confirm & pay, view the invoice, then cancel and watch the refund and
-   calendar release.
-5. Sign in as the **host** again → see the released dates and the booking.
-
-### Useful scripts
-
-| Script | Purpose |
-| --- | --- |
-| `npm run dev` | Dev server on `0.0.0.0:3000` |
-| `npm run build` | Prisma generate + production build |
-| `npm start` | Serve the production build |
-| `npm run typecheck` | TypeScript, no emit |
-| `npm run db:seed` | Regenerate the local SQLite dataset used to build the D1 seed |
-| `npm run db:export:d1` | Export that dataset to `src/lib/d1-seed-sql.ts` |
-| `npm run db:migrate` | Apply SQLite migrations to `prisma/dev.db` (tooling only) |
-| `npm run db:reset` | Rebuild the local SQLite dataset from scratch |
-
-Seed data is anchored to the day it is run: 9 users, 13 homes (9 approved,
-2 awaiting inspection, 1 rejected, 1 draft), 7 bookings including two
-cancellations, 150 days of calendar rows per home, and 21 inspection slots
-(completed, available and booked).
-
----
-
-## 3. Architecture
-
-```
-prisma/
-  schema.prisma          Relational model + indexes
-  migrations/            SQLite baseline migration
-  seed.mjs               Idempotent reset + realistic seed data
-src/
-  app/
-    page.tsx             Editorial landing page
-    properties/          Collection + property detail + booking widget
-    bookings/[id]/       Confirmation + printable invoice
-    login/ signup/       Auth screens
-    dashboard/
-      layout.tsx         Auth guard + role-aware navigation
-      guest/ host/ specialist/ admin/
-    api/                 JSON route handlers (bookings, properties,
-                         availability, inspections, moderation, auth)
-  components/            Design-system components + client workflows
-  lib/
-    auth.ts              bcrypt, JWT cookie sessions, requireUser/Role
-    booking-service.ts   Transactional booking + cancellation
-    availability.ts      Calendar projection (blocks + reservations)
-    pricing.ts           Quotes, fees, refund tiers
-    dates.ts             UTC calendar-date utilities
-    constants.ts         Roles, statuses, 85-point pass mark
-    prisma.ts            Lazy Prisma client on the D1 driver adapter
-    d1.ts                D1 binding resolver + minimal binding types
-    d1-bootstrap.ts      Idempotent schema, trigger and demo-data bootstrap
-    d1-seed-sql.ts       Generated seed statements (from the SQLite dataset)
-scripts/
-  export-d1-seed.mjs     Exports prisma/dev.db into the D1 seed module
-```
-
-**Server components** read the database directly and render dashboards and
-marketing pages. **Client components** handle calendars, modals, availability
-editing and forms, calling route handlers that re-authorise every action and
-recalculate every amount server-side.
-
-### Authentication & authorisation
-
-- Passwords: bcrypt (cost 10).
-- Session: HS256 JWT in an HTTP-only, SameSite=Lax cookie (Secure in
-  production), 7-day expiry.
-- `getSession`, `requireUser` and `requireRole` for pages;
-  `requireApiSession(roles)` for every mutating route.
-- Ownership checks: guests can only cancel their own bookings; hosts can only
-  edit their own listings and slots; specialists can only complete their own
-  inspections; admins have explicit override endpoints.
-- Booking, confirmation and invoice pages authorise the guest, the property
-  host or an admin.
-
-### Booking atomicity on D1
-
-D1 does not support interactive transactions, and Prisma's D1 adapter runs
-statements individually rather than as a transaction. The booking path therefore
-uses a single **`db.batch()`**, which D1 executes atomically:
-
-1. Validate dates, property status and host-closed nights (read checks).
-2. Price each night (custom price or base rate), fees, total.
-3. Insert the booking with a human reference (`PLM-XXXXXXXX`).
-4. Insert one `booking_nights` row per night. The unique
-   `(property_id, date)` index rejects an overlapping reservation, and a
-   trigger rejects a night the host has closed. Any conflict rolls the whole
-   batch back, so no partial booking survives.
-
-Cancellation uses the same pattern: update the booking, insert the unique
-cancellation record, delete its night ledger rows and release calendar dates in
-one batch. A second cancellation fails on the unique `cancellations.booking_id`
-index and returns `409`. There is a bounded retry for the unlikely reference
-collision.
-
-> SQLite has no native enum type in Prisma, so enum columns are `String` and
-> validated in the domain layer (`src/lib/constants.ts`). All date-only fields
-> are stored as UTC midnight to avoid timezone drift.
-
----
-
-## 4. Pages & API
-
-| Page | Purpose |
-| --- | --- |
-| `/` | Landing page, Plum Test story, featured homes |
-| `/properties` | Approved collection with `?q=` search and `?sort=` |
-| `/properties/[id]` | Full detail, inspection report, live booking calendar |
-| `/bookings/[id]/confirmation` | Instant confirmation, reference, refund summary |
-| `/bookings/[id]/invoice` | Print/PDF invoice (browser print dialog) |
-| `/login`, `/signup` | Auth, with safe `next` redirects |
-| `/dashboard/{guest,host,specialist,admin}` | Role portals |
-
-| Method & route | Access | Purpose |
-| --- | --- | --- |
-| `POST /api/auth/signup` | Public | Create guest/host, start session |
-| `POST /api/auth/login` | Public | Sign in |
-| `POST /api/auth/logout` | Session | Clear cookie |
-| `POST /api/bookings` | Session | Transactional reservation |
-| `POST /api/bookings/[id]/cancel` | Owner or admin | Cancel + refund + release |
-| `POST /api/properties` | Host | Submit a draft listing |
-| `PATCH /api/properties/[id]` | Owner or admin | Update title / nightly rate |
-| `POST /api/properties/[id]/availability` | Owner or admin | Open/close a night, custom price |
-| `POST /api/properties/[id]/inspection-request` | Owner | Claim a specialist slot |
-| `POST /api/specialist/slots` | Specialist | Publish a slot |
-| `DELETE /api/specialist/slots/[id]` | Owner | Withdraw an unclaimed slot |
-| `POST /api/specialist/inspections/[id]` | Owner or admin | Score + notes, auto-approve ≥85 |
-| `POST /api/admin/properties/[id]/moderate` | Admin | Approve/reject inspected home |
-| `POST /api/admin/cancellations/[id]/override` | Admin | Adjust refund |
-
-All mutations return JSON errors with appropriate `400/401/403/404/409` codes.
-
----
-
-## 5. Database
-
-Entities and relationships follow the brief:
-
-`users` → properties (host), bookings (guest), inspection slots (specialist),
-cancellations (cancelled_by); `properties` → availability calendars, bookings,
-inspection slots; `bookings` → cancellation (1:1).
-
-Additional operational columns: booking `reference`, price breakdown
-(`nightly_subtotal`, `cleaning_fee`, `service_fee`), slot `score` /
-`completed_at`, cancellation `refund_percent` / `admin_override`, and property
-marketing details (`tagline`, `description`, bedrooms, bathrooms, guests).
-
-The `booking_nights` ledger stores one row per reserved night. Its unique
-`(property_id, date)` index is the database guarantee against double booking;
-`cancellations.booking_id` is unique too. Indexes cover property status, host,
-guest, booking dates and slot date/status.
-
-### D1 schema and demo data
-
-A deployed D1 database starts empty and the platform does not expose arbitrary
-SQL to the deployer, so the Worker initialises itself on first use. On the first
-query, `src/lib/d1-bootstrap.ts`:
-
-1. Checks a `plum_meta` marker (one indexed read on every later isolate).
-2. Creates the tables and indexes with `CREATE ... IF NOT EXISTS`.
-3. Loads `SEED_STATEMENTS` when `users` is empty (every statement is
-   `INSERT OR IGNORE`, so concurrent cold starts are harmless).
-4. Creates the `booking_nights_closed_guard` trigger and writes the marker.
-
-Local D1 data persists in `.wrangler/state`. The demo dataset is authored in
-`prisma/seed.mjs` against a local SQLite file, then exported to D1 SQL:
+### 3. Instalar dependências e arrancar
 
 ```bash
-npm run db:seed          # rebuild prisma/dev.db with realistic data
-npm run db:export:d1     # regenerate src/lib/d1-seed-sql.ts
+npm install     # executa também `prisma generate`
+npm run dev     # http://localhost:3000
 ```
 
-### Changing the schema
+No primeiro pedido, a aplicação cria o esquema, os índices, o *trigger* de proteção e os dados de demonstração. Os dados locais persistem em `.wrangler/state`.
 
-Update `prisma/schema.prisma`, then mirror the change in the DDL inside
-`src/lib/d1-bootstrap.ts` and bump `SEED_VERSION`. Regenerate the client with
-`npx prisma generate`. The committed SQLite migrations remain useful for the
-seed authoring database, not for the deployed D1 database.
+### 4. Scripts disponíveis
 
----
+| Comando | Efeito |
+| --- | --- |
+| `npm run dev` | Servidor de desenvolvimento em `0.0.0.0:3000` |
+| `npm run build` | `prisma generate` + build de produção |
+| `npm start` | Servir o build de produção |
+| `npm run typecheck` | Verificação de tipos, sem emitir ficheiros |
+| `npm run db:seed` | Regenerar o conjunto SQLite usado para produzir o *seed* do D1 |
+| `npm run db:export:d1` | Exportar esse conjunto para `src/lib/d1-seed-sql.ts` |
+| `npm run db:reset` | Reconstruir o conjunto SQLite de raiz |
 
-## 6. Production deployment
+### 5. Resolução de problemas
 
-The app targets **Cloudflare Workers through Freebuff Sites**, where D1 is
-provided as a managed binding. The Next.js adapter (OpenNext) builds the Worker.
-
-### Freebuff Sites (recommended)
-
-1. Create a site and provision a D1 database with the binding name `DB`.
-2. Add `AUTH_SECRET` under **Sites → Secrets** (32+ random bytes, e.g.
-   `openssl rand -hex 32`). Never put it in `NEXT_PUBLIC_*`.
-3. Run the Next.js preparation step (`sites_prepare_next` in Freebuff), which
-   installs the supported OpenNext/Wrangler versions and builds
-   `freebuff-sites-build/manifest.json`.
-4. Deploy that manifest to the preview or production environment.
-5. The first request applies the schema and demo data automatically.
-
-`freebuff.wrangler.jsonc` is generated for local development and is regenerated
-when publishing; keep it in the repo so `npm run dev` can provide the D1 binding.
-
-### Other runtimes
-
-A Node server (`npm run build && npm start`) still works for UI review, but it
-needs a D1 binding via Wrangler and is not the deployment target. A hosted
-Postgres variant would require replacing the D1 adapter and the raw booking
-batches with Prisma transactions; the SQLite `DATABASE_URL` is only used by the
-database tooling.
-
-### Production checklist
-
-- Strong `AUTH_SECRET` stored as a platform secret, HTTPS-only cookies
-  (automatic in production).
-- Keep the D1 binding named `DB`; the adapter and bootstrap depend on it.
-- Seed only if you intend to demo; remove `SEED_STATEMENTS` to ship an empty
-  database (the schema still bootstraps).
-- Replace the simulated payment step with a real provider (Stripe) and keep the
-  booking transaction as the single source of truth.
-- Add rate limiting to auth and booking endpoints at the edge/CDN.
-- Add transactional email for confirmations, cancellations and inspection
-  results.
+| Sintoma | Causa provável | Resolução |
+| --- | --- | --- |
+| `internal error; reference …` ao abrir o D1 | Estado local do Miniflare corrompido | Parar o servidor, apagar `.wrangler/` e voltar a executar `npm run dev` |
+| `prisma generate` falha durante o `npm install` | Rede ou *postinstall* interrompido | Executar `npx prisma generate` isoladamente — não contacta nenhuma base de dados |
+| Porta 3000 ocupada | Outra instância em execução | `npx next dev -p 3001` |
+| Nenhuma casa aparece numa instalação nova | O *seed* corre no primeiro pedido | Recarregar a página depois de o servidor indicar que está pronto |
 
 ---
 
-## 7. Design system
+## 4. Estrutura da Base de Dados
 
-- **Palette:** charcoal ink `#16130E`, warm cream `#FAF7F0`, paper `#FFFDF8`,
-  antique gold `#A98554`, hairline `#E4DCCB`, moss green for approvals,
-  amber for in-progress, wine for destructive/rejected states.
-- **Type:** Fraunces (display serif) + Inter (UI sans), loaded from Google
-  Fonts with system fallbacks.
-- **Status language:** green *Plum Approved*, amber *Inspection scheduled*,
-  red *Not approved*, neutral *Draft*; matching tones for bookings and slots.
-- **Accessibility:** skip link, landmarks, labelled form fields, `role="alert"`
-  error regions, `aria-live` quote updates, `aria-pressed` calendar dates,
-  visible focus rings, high-contrast text, keyboard-dismissible modal with focus
-  trap and Escape handling. Designed against WCAG AA; run an automated audit
-  before a production launch.
-- **Destructive actions:** cancellation uses an explicit modal with a refund
-  preview and reason; admin rejection uses an inline two-step confirmation.
+O modelo é relacional e vive em `prisma/schema.prisma`; no D1 é criado por `src/lib/d1-bootstrap.ts` com instruções `CREATE ... IF NOT EXISTS` idempotentes.
+
+| Entidade | Tabela | Descrição |
+| --- | --- | --- |
+| **User** | `users` | Conta com `role` (`GUEST`, `HOST`, `SPECIALIST`, `ADMIN`), email único e *hash* bcrypt da palavra-passe. |
+| **Property** | `properties` | Casa submetida por um anfitrião: localização, preço por noite, estado (`DRAFT`, `PENDING_INSPECTION`, `APPROVED`, `REJECTED`) e pontuação do Plum Test. |
+| **InspectionSlot** | `inspection_slots` | Vaga de inspeção publicada por um especialista; fica associada a uma casa quando o anfitrião a reserva e guarda pontuação, notas e data de conclusão. |
+| **AvailabilityCalendar** | `availability_calendars` | Um registo por casa e por data, com `is_available` e `custom_price` opcional. Único em `(property_id, date)`. |
+| **Booking** | `bookings` | Reserva com referência legível (`PLM-XXXXXXXX`), datas, número de noites, detalhe de preços e estado. |
+| **BookingNight** | `booking_nights` | Registo de uma noite efetivamente ocupada. O índice único `(property_id, date)` é a garantia contra duplicação de reservas. |
+| **Cancellation** | `cancellations` | Cancelamento 1:1 com a reserva (`booking_id` único), com motivo, percentagem e valor do reembolso e marca de ajuste manual. |
+
+### Relações
+
+```
+users (HOST)     1 ─── N  properties
+users (GUEST)    1 ─── N  bookings
+users (SPECIALIST) 1 ── N  inspection_slots
+properties       1 ─── N  availability_calendars
+properties       1 ─── N  inspection_slots
+properties       1 ─── N  bookings
+properties       1 ─── N  booking_nights
+bookings         1 ─── 1  cancellations
+bookings         1 ─── N  booking_nights
+users            1 ─── N  cancellations (cancelled_by)
+```
+
+### Garantias ao nível da base de dados
+
+- `booking_nights (property_id, date)` **único** — impede duas reservas sobrepostas mesmo em concorrência.
+- `cancellations.booking_id` **único** — um segundo cancelamento devolve `409`.
+- *Trigger* `booking_nights_closed_guard` — rejeita noites que o anfitrião tenha fechado.
+- Índices em estado de propriedade, anfitrião, hóspede, datas de reserva e data/estado de inspeção.
+
+### Inicialização e dados de demonstração
+
+Como o D1 gerido começa vazio e não expõe SQL arbitrário ao *deployer*, o Worker inicializa-se sozinho no primeiro uso:
+
+1. Lê o marcador `plum_meta` (uma leitura indexada nos *isolates* seguintes).
+2. Cria tabelas, índices e o *trigger* com `IF NOT EXISTS`.
+3. Carrega `SEED_STATEMENTS` se `users` estiver vazia (todas as instruções são `INSERT OR IGNORE`).
+4. Grava o marcador de versão.
+
+O conjunto de demonstração é escrito em `prisma/seed.mjs` sobre um ficheiro SQLite local e depois exportado para SQL do D1:
+
+```bash
+npm run db:seed        # reconstrói prisma/dev.db com dados realistas
+npm run db:export:d1   # regenera src/lib/d1-seed-sql.ts
+```
+
+Inclui 9 utilizadores, 13 casas (9 aprovadas, 2 por inspecionar, 1 rejeitada, 1 rascunho), 7 reservas (duas já canceladas), 150 dias de calendário por casa e 21 vagas de inspeção.
+
+### Alterar o esquema
+
+1. Atualizar `prisma/schema.prisma`.
+2. Replicar a alteração no DDL de `src/lib/d1-bootstrap.ts` e incrementar `SEED_VERSION`.
+3. Executar `npx prisma generate`.
+
+As migrações SQLite em `prisma/migrations/` servem apenas para a base de dados de autoria do *seed*, não para o D1 publicado.
 
 ---
 
-## 8. Verified workflows
+## 5. Documentação Adicional
 
-Exercised against the running app over HTTP during the build:
+| Documento | Conteúdo |
+| --- | --- |
+| [`docs/presentation.html`](docs/presentation.html) | Apresentação 16:9 com guião de demonstração, investigação e modelo de dados (`Ctrl/Cmd + P` para PDF) |
+| [`docs/user-guide.html`](docs/user-guide.html) | Manual por perfil, com capturas de ecrã, regras de preços e reembolsos |
+| [`docs/report.html`](docs/report.html) | Relatório: requisitos, justificação tecnológica, desenho da base de dados, testes e limitações |
 
-- Guest login, role redirects, and 403/404 authorisation boundaries.
-- Concurrent booking requests for identical dates → one `201`, one `409`, one
-  database row.
-- Confirmation and invoice pages for the booking owner.
-- Cancellation at >14 days → 100% refund; at 7–14 days → 50%; repeat cancel →
-  `409`; calendar nights released to `is_available = true`.
-- Booking rejected for a host-closed night, past check-in and invalid range.
-- Host availability update + custom price; refusal to reopen a reserved night;
-  cross-host access denied.
-- Host inspection request, specialist completes at 92 → auto-approved; at 70 →
-  rejected; admin override → approved.
-- Specialist slot publish/withdraw; admin refund override capped at the booking
-  total; validation errors surfaced in the UI.
-- The complete suite was re-run inside local workerd against a fresh D1
-  database, and the booking, confirmation, invoice and cancellation paths were
-  repeated against the published preview.
+Os documentos são autónomos (capturas incorporadas), podendo ser partilhados ou impressos individualmente.
 
-## 9. Known limitations
+### Limitações conhecidas
 
-- Payments and confirmation emails are simulated (no card is charged).
-- Invoice "download" uses the browser's print-to-PDF dialog.
-- Listing photography is chosen from curated stock images, not uploaded.
-- No background jobs; cancellation refunds are DB records awaiting a payment
-  provider integration.
-- Demo accounts intentionally share simple passwords — never use them in
-  production.
-- UI rendering was verified by HTTP responses and the DOM; a hands-on browser
-  and assistive-technology pass is still recommended before a public launch.
+- Pagamentos e emails de confirmação são simulados; nenhum cartão é cobrado.
+- O download da fatura usa o diálogo de impressão do navegador.
+- As fotografias dos anúncios vêm de imagens de *stock* curadas; não há *upload*.
+- Não existem tarefas em segundo plano: os reembolsos ficam registados à espera de integração com um fornecedor de pagamentos.
+- As contas de demonstração partilham palavras-passe simples e nunca devem ser usadas em produção.
+
+---
+
+## 6. Autores e Agradecimentos
+
+### Autor
+
+- **[@kitokaesu](https://github.com/kitokaesu)** — conceção, desenvolvimento e documentação.
+
+### Agradecimentos
+
+- **Plum Guide**, pela inspiração no modelo de curadoria e no processo de inspeção "Plum Test".
+- **Next.js, React e Vercel**, pela framework e pela documentação que sustentam a aplicação.
+- **Prisma** e **Cloudflare**, pelo ORM e pela base de dados D1 em ambiente *serverless*.
+- **Unsplash**, pelas fotografias usadas nos anúncios de demonstração.
+- Aos docentes e colegas da unidade curricular, pelo *feedback* ao longo do desenvolvimento.
+
+---
+
+*Projeto de demonstração com fins académicos. Os dados, casas e reservas são fictícios. Não existe ficheiro `LICENSE`: contactar o autor antes de reutilizar o código.*
